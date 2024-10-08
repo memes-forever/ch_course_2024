@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  clickhouse:
+    image: 'clickhouse/clickhouse-server'
+    volumes:
+      - ch-db-volume:/var/lib/clickhouse
+      - ${PWD}/volumes/clickhouse/etc/clickhouse-server/config.d/config.xml:/etc/clickhouse-server/config.d/config.xml
+      - ${PWD}/volumes/clickhouse/etc/clickhouse-server/users.d/users.xml:/etc/clickhouse-server/users.d/users.xml
+    ports:
+      - '127.0.0.1:8123:8123'
+      - '127.0.0.1:9000:9000'
+    ulimits:
+      nofile: 262144
+
+volumes:
+  ch-db-volume:
