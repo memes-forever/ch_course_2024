@@ -1,0 +1,425 @@
+############################################################ 1 ########################################################
+4bc428cb4f18 :) show databases;
+
+SHOW DATABASES
+
+Query id: f62b6981-c131-49cc-ab35-2560a5376bfd
+
+   ┌─name───────────────┐
+1. │ INFORMATION_SCHEMA │
+2. │ default            │
+3. │ information_schema │
+4. │ system             │
+   └────────────────────┘
+
+4 rows in set. Elapsed: 0.006 sec.
+
+4bc428cb4f18 :) CREATE DATABASE homework_three ENGINE = Atomic;
+
+CREATE DATABASE homework_three
+ENGINE = Atomic
+
+Query id: 7b70c3f7-8863-4e05-824b-fd27a34ce6b4
+
+Ok.
+
+0 rows in set. Elapsed: 0.009 sec.
+
+4bc428cb4f18 :) show databases;
+
+SHOW DATABASES
+
+Query id: d53fbc65-eb75-4774-b207-d880a343c07c
+
+   ┌─name───────────────┐
+1. │ INFORMATION_SCHEMA │
+2. │ default            │
+3. │ homework_three     │
+4. │ information_schema │
+5. │ system             │
+   └────────────────────┘
+
+5 rows in set. Elapsed: 0.004 sec.
+############################################################ end 1 ########################################################
+############################################################ 2 ############################################################
+4bc428cb4f18 :) CREATE TABLE restaurant_menu
+(
+    id UInt32 comment 'id with int',
+    dish_type LowCardinality(String) comment 'тип блюда, LowCardinality потому что значения будут часто дублироваться',
+    dish_name String comment 'имя блюда',
+    dish_count Int32 comment 'кол-во в порции',
+    process_dttm Datetime64 default now() comment 'дата вставки'
+) ENGINE = MergeTree ORDER BY id;
+
+CREATE TABLE restaurant_menu
+(
+    `id` UInt32 COMMENT 'id with int',
+    `dish_type` LowCardinality(String) COMMENT 'тип блюда, LowCardinality потому что значения будут часто дублироваться',
+    `dish_name` String COMMENT 'имя блюда',
+    `dish_count` Int32 COMMENT 'кол-во в порции',
+    `process_dttm` Datetime64 DEFAULT now() COMMENT 'дата вставки'
+)
+ENGINE = MergeTree
+ORDER BY id
+
+Query id: 11faad20-470d-4b73-b6bf-7842e1d6061f
+
+Ok.
+
+0 rows in set. Elapsed: 0.019 sec.
+
+############################################################ end 2 ########################################################
+############################################################ 3 ############################################################
+4bc428cb4f18 :) insert into restaurant_menu(id, dish_type, dish_name, dish_count)
+values
+    (1, 'Первое', 'Борщ', 1),
+    (2, 'Первое', 'Харчо', 1),
+    (3, 'Второе', 'Плов', 1),
+    (4, 'Второе', 'Гречка с мясом', 1),
+    (5, 'Закуска', 'Хлеб', 4)
+;
+
+INSERT INTO restaurant_menu (id, dish_type, dish_name, dish_count) FORMAT Values
+
+Query id: d1bd9b29-d95f-448f-90c3-7fd8cfb36d32
+
+Ok.
+
+5 rows in set. Elapsed: 0.012 sec.
+
+4bc428cb4f18 :) select * from restaurant_menu;
+
+SELECT *
+FROM restaurant_menu
+
+Query id: da1743b5-e29f-4e8a-a614-3db7ad2f46ea
+
+   ┌─id─┬─dish_type─┬─dish_name──────┬─dish_count─┬────────────process_dttm─┐
+1. │  1 │ Первое    │ Борщ           │          1 │ 2024-10-15 08:47:08.000 │
+2. │  2 │ Первое    │ Харчо          │          1 │ 2024-10-15 08:47:08.000 │
+3. │  3 │ Второе    │ Плов           │          1 │ 2024-10-15 08:47:08.000 │
+4. │  4 │ Второе    │ Гречка с мясом │          1 │ 2024-10-15 08:47:08.000 │
+5. │  5 │ Закуска   │ Хлеб           │          4 │ 2024-10-15 08:47:08.000 │
+   └────┴───────────┴────────────────┴────────────┴─────────────────────────┘
+
+5 rows in set. Elapsed: 0.011 sec.
+
+4bc428cb4f18 :) alter table restaurant_menu update dish_count = 5 where dish_name = 'Хлеб';
+
+ALTER TABLE restaurant_menu
+    (UPDATE dish_count = 5 WHERE dish_name = 'Хлеб')
+
+Query id: 07d377f1-7588-484a-9394-16828347fa00
+
+Ok.
+
+0 rows in set. Elapsed: 0.009 sec.
+
+4bc428cb4f18 :) select * from restaurant_menu;
+
+SELECT *
+FROM restaurant_menu
+
+Query id: 3a955dbd-6d9a-4993-9b0c-524cd82d1246
+
+   ┌─id─┬─dish_type─┬─dish_name──────┬─dish_count─┬────────────process_dttm─┐
+1. │  1 │ Первое    │ Борщ           │          1 │ 2024-10-15 08:52:30.000 │
+2. │  2 │ Первое    │ Харчо          │          1 │ 2024-10-15 08:52:30.000 │
+3. │  3 │ Второе    │ Плов           │          1 │ 2024-10-15 08:52:30.000 │
+4. │  4 │ Второе    │ Гречка с мясом │          1 │ 2024-10-15 08:52:30.000 │
+5. │  5 │ Закуска   │ Хлеб           │          5 │ 2024-10-15 08:52:30.000 │
+   └────┴───────────┴────────────────┴────────────┴─────────────────────────┘
+
+5 rows in set. Elapsed: 0.002 sec.
+
+4bc428cb4f18 :) alter table restaurant_menu delete where id =3;
+
+ALTER TABLE restaurant_menu
+    (DELETE WHERE id = 3)
+
+Query id: 65a1d97c-2d42-4f4b-9a28-0e68863f61a6
+
+Ok.
+
+0 rows in set. Elapsed: 0.008 sec.
+
+4bc428cb4f18 :) select * from restaurant_menu;
+
+SELECT *
+FROM restaurant_menu
+
+Query id: 30ffccaf-631e-4d2a-9fcc-a1e396c3d152
+
+   ┌─id─┬─dish_type─┬─dish_name──────┬─dish_count─┬────────────process_dttm─┐
+1. │  1 │ Первое    │ Борщ           │          1 │ 2024-10-15 08:52:30.000 │
+2. │  2 │ Первое    │ Харчо          │          1 │ 2024-10-15 08:52:30.000 │
+3. │  4 │ Второе    │ Гречка с мясом │          1 │ 2024-10-15 08:52:30.000 │
+4. │  5 │ Закуска   │ Хлеб           │          5 │ 2024-10-15 08:52:30.000 │
+   └────┴───────────┴────────────────┴────────────┴─────────────────────────┘
+
+4 rows in set. Elapsed: 0.003 sec.
+
+############################################################ end 3 ########################################################
+############################################################ 4 ############################################################
+4bc428cb4f18 :) alter table restaurant_menu add column dish_weight_kg Decimal64(3) comment 'вес в кг';
+
+ALTER TABLE restaurant_menu
+    (ADD COLUMN `dish_weight_kg` Decimal64(3) COMMENT 'вес в кг')
+
+Query id: 21bf3cfd-daf8-4bc5-8b9d-59df8f7436e0
+
+Ok.
+
+0 rows in set. Elapsed: 0.008 sec.
+
+4bc428cb4f18 :) ALTER TABLE restaurant_menu drop column dish_count;
+
+ALTER TABLE restaurant_menu
+    (DROP COLUMN dish_count)
+
+Query id: 99158a99-2e18-487c-aa4f-7eca356ee6a7
+
+Ok.
+
+0 rows in set. Elapsed: 0.014 sec.
+
+4bc428cb4f18 :) alter table restaurant_menu update dish_weight_kg = 0.05 where id = 5;
+
+ALTER TABLE restaurant_menu
+    (UPDATE dish_weight_kg = 0.05 WHERE id = 5)
+
+Query id: decbbaf9-39bf-40a1-953c-9dcb4dab55c7
+
+Ok.
+
+0 rows in set. Elapsed: 0.006 sec.
+
+4bc428cb4f18 :) select * from restaurant_menu;
+
+SELECT *
+FROM restaurant_menu
+
+Query id: 19d6172a-942d-48c7-bd3d-4a01521ed376
+
+   ┌─id─┬─dish_type─┬─dish_name──────┬────────────process_dttm─┬─dish_weight_kg─┐
+1. │  1 │ Первое    │ Борщ           │ 2024-10-15 08:52:30.000 │              0 │
+2. │  2 │ Первое    │ Харчо          │ 2024-10-15 08:52:30.000 │              0 │
+3. │  4 │ Второе    │ Гречка с мясом │ 2024-10-15 08:52:30.000 │              0 │
+4. │  5 │ Закуска   │ Хлеб           │ 2024-10-15 08:52:30.000 │           0.05 │
+   └────┴───────────┴────────────────┴─────────────────────────┴────────────────┘
+
+4 rows in set. Elapsed: 0.002 sec.
+
+############################################################ end 4 ########################################################
+############################################################ 5 ############################################################
+root@4bc428cb4f18:/# wget https://s3.amazonaws.com/menusdata.nypl.org/gzips/2021_08_01_07_01_17_data.tgz
+--2024-10-15 09:03:23--  https://s3.amazonaws.com/menusdata.nypl.org/gzips/2021_08_01_07_01_17_data.tgz
+Resolving s3.amazonaws.com (s3.amazonaws.com)... 52.217.199.32, 52.216.152.22, 3.5.0.20, ...
+Connecting to s3.amazonaws.com (s3.amazonaws.com)|52.217.199.32|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 36600119 (35M) [text/csv]
+Saving to: ‘2021_08_01_07_01_17_data.tgz’
+
+2021_08_01_07_01_17_data.tgz                           100%[=========================================================================================================================>]  34.90M  1.31MB/s    in 43s
+
+2024-10-15 09:04:06 (837 KB/s) - ‘2021_08_01_07_01_17_data.tgz’ saved [36600119/36600119]
+
+root@4bc428cb4f18:/# tar xvf 2021_08_01_07_01_17_data.tgz
+root@4bc428cb4f18:/# cp Dish.csv /var/lib/clickhouse/user_files/Dish.csv
+root@4bc428cb4f18:/# chmod 777 /var/lib/clickhouse/user_files/Dish.csv
+
+4bc428cb4f18 :) SELECT count(*) FROM file('Dish.csv', CSV)
+
+SELECT count(*)
+FROM file('Dish.csv', CSV)
+
+Query id: 28159d3e-c7f4-4851-8bce-51da9203f3c8
+
+   ┌─count()─┐
+1. │  428146 │
+   └─────────┘
+
+1 row in set. Elapsed: 0.109 sec. Processed 428.15 thousand rows, 26.77 MB (3.93 million rows/s., 245.46 MB/s.)
+Peak memory usage: 92.20 KiB.
+
+
+############################################################ end 5 ########################################################
+############################################################ 6 ############################################################
+4bc428cb4f18 :) CREATE TABLE dish
+(
+    id UInt32,
+    name String,
+    description String,
+    menus_appeared UInt32,
+    times_appeared Int32,
+    first_appeared UInt16,
+    last_appeared UInt16,
+    lowest_price Decimal64(3),
+    highest_price Decimal64(3)
+) ENGINE = MergeTree ORDER BY id;
+
+CREATE TABLE dish
+(
+    `id` UInt32,
+    `name` String,
+    `description` String,
+    `menus_appeared` UInt32,
+    `times_appeared` Int32,
+    `first_appeared` UInt16,
+    `last_appeared` UInt16,
+    `lowest_price` Decimal64(3),
+    `highest_price` Decimal64(3)
+)
+ENGINE = MergeTree
+ORDER BY id
+
+Query id: 17d5482a-ec12-47dc-a60a-b4ce763f393f
+
+Ok.
+
+0 rows in set. Elapsed: 0.012 sec.
+
+root@4bc428cb4f18:/# clickhouse-client --format_csv_allow_single_quotes 0 --input_format_null_as_default 0 --query "INSERT INTO homework_three.dish FORMAT CSVWithNames" < Dish.csv
+
+4bc428cb4f18 :) select * from dish limit 1;
+
+SELECT *
+FROM dish
+LIMIT 1
+
+Query id: 29e9c7b4-0fa6-433b-b72a-afc1175cef0c
+
+   ┌─id─┬─name───────────────────────┬─description─┬─menus_appeared─┬─times_appeared─┬─first_appeared─┬─last_appeared─┬─lowest_price─┬─highest_price─┐
+1. │  1 │ Consomme printaniere royal │             │              8 │              8 │           1897 │          1927 │          0.2 │           0.4 │
+   └────┴────────────────────────────┴─────────────┴────────────────┴────────────────┴────────────────┴───────────────┴──────────────┴───────────────┘
+
+1 row in set. Elapsed: 0.006 sec.
+
+############################################################ end 6 ########################################################
+############################################################ 7 ############################################################
+4bc428cb4f18 :) select name, active, database, table from system.parts where database='homework_three';
+
+SELECT
+    name,
+    active,
+    database,
+    `table`
+FROM system.parts
+WHERE database = 'homework_three'
+
+Query id: af8d4489-a33b-43b0-97bc-64a1db84f9c9
+
+   ┌─name────────┬─active─┬─database───────┬─table───────────┐
+1. │ all_1_1_0   │      1 │ homework_three │ dish            │
+2. │ all_2_2_0_7 │      1 │ homework_three │ restaurant_menu │
+   └─────────────┴────────┴────────────────┴─────────────────┘
+
+2 rows in set. Elapsed: 0.003 sec.
+
+4bc428cb4f18 :) alter table homework_three.restaurant_menu DETACH PART 'all_2_2_0_7';
+
+ALTER TABLE homework_three.restaurant_menu
+    (DETACH PART 'all_2_2_0_7')
+
+Query id: bbd5a0de-0b5e-46e4-abd6-5ff3a58d370b
+
+Ok.
+
+0 rows in set. Elapsed: 0.009 sec.
+
+root@4bc428cb4f18:/var/lib/clickhouse/data/homework_three/restaurant_menu/detached# ls -la
+total 12
+drwxr-x--- 3 clickhouse clickhouse 4096 Oct 15 09:28 .
+drwxr-x--- 5 clickhouse clickhouse 4096 Oct 15 09:28 ..
+drwxr-x--- 2 clickhouse clickhouse 4096 Oct 15 09:28 all_2_2_0_7
+
+
+4bc428cb4f18 :) select name, active, database, table from system.parts where database='homework_three';
+
+SELECT
+    name,
+    active,
+    database,
+    `table`
+FROM system.parts
+WHERE database = 'homework_three'
+
+Query id: dbf57d8d-e09c-4c24-abab-08fa4cc00a14
+
+   ┌─name────────┬─active─┬─database───────┬─table───────────┐
+1. │ all_1_1_0   │      1 │ homework_three │ dish            │
+2. │ all_2_2_1_7 │      0 │ homework_three │ restaurant_menu │
+   └─────────────┴────────┴────────────────┴─────────────────┘
+
+2 rows in set. Elapsed: 0.004 sec.
+
+4bc428cb4f18 :) alter table homework_three.restaurant_menu ATTACH PART 'all_2_2_0_7';
+
+ALTER TABLE homework_three.restaurant_menu
+    (ATTACH PART 'all_2_2_0_7')
+
+Query id: 9c3aa9a7-882d-435c-81bf-df3822ea4253
+
+Ok.
+
+0 rows in set. Elapsed: 0.007 sec.
+
+root@4bc428cb4f18:/var/lib/clickhouse/data/homework_three/restaurant_menu/detached# ls -la
+total 8
+drwxr-x--- 2 clickhouse clickhouse 4096 Oct 15 09:29 .
+drwxr-x--- 6 clickhouse clickhouse 4096 Oct 15 09:29 ..
+
+
+4bc428cb4f18 :) select name, active, database, table from system.parts where database='homework_three';
+
+SELECT
+    name,
+    active,
+    database,
+    `table`
+FROM system.parts
+WHERE database = 'homework_three'
+
+Query id: aafaa556-0d85-4a1e-b68d-ce5a853b2053
+
+   ┌─name────────┬─active─┬─database───────┬─table───────────┐
+1. │ all_1_1_0   │      1 │ homework_three │ dish            │
+2. │ all_2_2_1_7 │      0 │ homework_three │ restaurant_menu │
+3. │ all_8_8_0   │      1 │ homework_three │ restaurant_menu │
+   └─────────────┴────────┴────────────────┴─────────────────┘
+
+3 rows in set. Elapsed: 0.004 sec.
+
+4bc428cb4f18 :) alter table homework_three.restaurant_menu drop part 'all_9_9_0';
+
+ALTER TABLE homework_three.restaurant_menu
+    (DROP PART 'all_9_9_0')
+
+Query id: c75d3b61-7a77-46a9-8350-f17854e3bb86
+
+Ok.
+
+0 rows in set. Elapsed: 0.007 sec.
+
+4bc428cb4f18 :) select name, active, database, table from system.parts where database='homework_three';
+
+SELECT
+    name,
+    active,
+    database,
+    `table`
+FROM system.parts
+WHERE database = 'homework_three'
+
+Query id: d4afe09a-e7f4-443e-abed-17b50c611c4f
+
+   ┌─name────────┬─active─┬─database───────┬─table───────────┐
+1. │ all_1_1_0   │      1 │ homework_three │ dish            │
+2. │ all_2_2_1_7 │      0 │ homework_three │ restaurant_menu │
+3. │ all_8_8_1   │      0 │ homework_three │ restaurant_menu │
+4. │ all_9_9_1   │      0 │ homework_three │ restaurant_menu │
+   └─────────────┴────────┴────────────────┴─────────────────┘
+
+4 rows in set. Elapsed: 0.006 sec.
+
+############################################################ end 7 ########################################################
