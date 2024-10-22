@@ -1,0 +1,491 @@
+1. VersionedCollapsingMergeTree
+2. SummingMergeTree
+3. ReplacingMergeTree
+4. MergeTree
+5. AggregatingMergeTree
+6. CollapsingMergeTree
+
+
+############################################################ 0 ########################################################
+d979b380b3e7 :) CREATE DATABASE homework_five ENGINE = Atomic;
+
+CREATE DATABASE homework_five
+ENGINE = Atomic
+
+Query id: 681fdacf-c254-4851-ad86-fd2daaa1c873
+
+Ok.
+
+0 rows in set. Elapsed: 0.019 sec.
+
+d979b380b3e7 :) use homework_five;
+
+USE homework_five
+
+Query id: 1acb6682-36e7-4d3d-8a82-1c1ef9d56f2a
+
+Ok.
+
+0 rows in set. Elapsed: 0.001 sec.
+
+############################################################ end 0 ########################################################
+############################################################ 1 ########################################################
+
+d979b380b3e7 :) CREATE TABLE tbl1
+(
+    UserID UInt64,
+    PageViews UInt8,
+    Duration UInt8,
+    Sign Int8,
+    Version UInt8
+)
+ENGINE = VersionedCollapsingMergeTree(Sign, Version)
+ORDER BY UserID;
+
+CREATE TABLE tbl1
+(
+    `UserID` UInt64,
+    `PageViews` UInt8,
+    `Duration` UInt8,
+    `Sign` Int8,
+    `Version` UInt8
+)
+ENGINE = VersionedCollapsingMergeTree(Sign, Version)
+ORDER BY UserID
+
+Query id: 8123732a-eee7-44d3-9267-68bcaadf8dc7
+
+Ok.
+
+0 rows in set. Elapsed: 0.021 sec.
+
+d979b380b3e7 :) INSERT INTO tbl1 VALUES (4324182021466249494, 5, 146, -1, 1);
+INSERT INTO tbl1 VALUES (4324182021466249494, 5, 146, 1, 1),(4324182021466249494, 6, 185, 1, 2);
+
+
+INSERT INTO tbl1 FORMAT Values
+
+Query id: 428fc27e-88a1-489b-a994-fb47ea162ed8
+
+Ok.
+
+1 row in set. Elapsed: 0.025 sec.
+
+
+INSERT INTO tbl1 FORMAT Values
+
+Query id: 83356760-dda6-4937-97d8-1e1025314756
+
+Ok.
+
+2 rows in set. Elapsed: 0.004 sec.
+
+d979b380b3e7 :) SELECT * FROM tbl1;
+
+
+SELECT *
+FROM tbl1
+
+Query id: c053d347-8ba0-4cdf-a1ac-5fedab9e607f
+
+   ┌──────────────UserID─┬─PageViews─┬─Duration─┬─Sign─┬─Version─┐
+1. │ 4324182021466249494 │         5 │      146 │    1 │       1 │
+2. │ 4324182021466249494 │         6 │      185 │    1 │       2 │
+   └─────────────────────┴───────────┴──────────┴──────┴─────────┘
+   ┌──────────────UserID─┬─PageViews─┬─Duration─┬─Sign─┬─Version─┐
+3. │ 4324182021466249494 │         5 │      146 │   -1 │       1 │
+   └─────────────────────┴───────────┴──────────┴──────┴─────────┘
+
+3 rows in set. Elapsed: 0.017 sec.
+
+d979b380b3e7 :) SELECT * FROM tbl1 final;
+
+SELECT *
+FROM tbl1
+FINAL
+
+Query id: 7589f2f5-4b83-4b75-a8e9-35da43af34ae
+
+   ┌──────────────UserID─┬─PageViews─┬─Duration─┬─Sign─┬─Version─┐
+1. │ 4324182021466249494 │         6 │      185 │    1 │       2 │
+   └─────────────────────┴───────────┴──────────┴──────┴─────────┘
+
+1 row in set. Elapsed: 0.036 sec.
+
+
+
+############################################################ end 1 ########################################################
+############################################################ 2 ########################################################
+
+d979b380b3e7 :) CREATE TABLE tbl2
+(
+    key UInt32,
+    value UInt32
+)
+ENGINE = SummingMergeTree
+ORDER BY key;
+
+CREATE TABLE tbl2
+(
+    `key` UInt32,
+    `value` UInt32
+)
+ENGINE = SummingMergeTree
+ORDER BY key
+
+Query id: 7d7480e8-61a5-4207-8ad8-095454f42413
+
+Ok.
+
+0 rows in set. Elapsed: 0.024 sec.
+
+d979b380b3e7 :) INSERT INTO tbl2 Values(1,1),(1,2),(2,1);
+
+
+INSERT INTO tbl2 FORMAT Values
+
+Query id: ecedaff1-8291-44f2-bdcb-d670b62f0076
+
+Ok.
+
+3 rows in set. Elapsed: 0.024 sec.
+
+d979b380b3e7 :) select * from tbl2;
+
+
+SELECT *
+FROM tbl2
+
+Query id: 9e4bb182-71dc-4a8f-9e97-f584012c5c52
+
+   ┌─key─┬─value─┐
+1. │   1 │     3 │
+2. │   2 │     1 │
+   └─────┴───────┘
+
+2 rows in set. Elapsed: 0.007 sec.
+
+
+
+############################################################ end 2 ########################################################
+############################################################ 3 ########################################################
+
+d979b380b3e7 :) CREATE TABLE tbl3
+(
+    `id` Int32,
+    `status` String,
+    `price` String,
+    `comment` String
+)
+ENGINE = ReplacingMergeTree
+PRIMARY KEY (id)
+ORDER BY (id, status);
+
+CREATE TABLE tbl3
+(
+    `id` Int32,
+    `status` String,
+    `price` String,
+    `comment` String
+)
+ENGINE = ReplacingMergeTree
+PRIMARY KEY id
+ORDER BY (id, status)
+
+Query id: 81709b85-08fc-416c-8566-e17927c2bdb4
+
+Ok.
+
+0 rows in set. Elapsed: 0.021 sec.
+
+d979b380b3e7 :)
+d979b380b3e7 :) INSERT INTO tbl3 VALUES (23, 'success', '1000', 'Confirmed');
+INSERT INTO tbl3 VALUES (23, 'success', '2000', 'Cancelled');
+
+
+INSERT INTO tbl3 FORMAT Values
+
+Query id: 85492ae4-5b88-47e8-8ed0-f05b65d10159
+
+Ok.
+
+1 row in set. Elapsed: 0.008 sec.
+
+
+INSERT INTO tbl3 FORMAT Values
+
+Query id: b472b862-7692-4a41-b015-a209d7bbb4cc
+
+Ok.
+
+1 row in set. Elapsed: 0.003 sec.
+
+d979b380b3e7 :)
+d979b380b3e7 :) SELECT * from tbl3 WHERE id=23;
+
+SELECT *
+FROM tbl3
+WHERE id = 23
+
+Query id: 10a953c1-897e-44c5-8895-b3f0efb8235f
+
+   ┌─id─┬─status──┬─price─┬─comment───┐
+1. │ 23 │ success │ 1000  │ Confirmed │
+   └────┴─────────┴───────┴───────────┘
+   ┌─id─┬─status──┬─price─┬─comment───┐
+2. │ 23 │ success │ 2000  │ Cancelled │
+   └────┴─────────┴───────┴───────────┘
+
+2 rows in set. Elapsed: 0.019 sec.
+
+d979b380b3e7 :) SELECT * from tbl3 FINAL WHERE id=23;
+
+SELECT *
+FROM tbl3
+FINAL
+WHERE id = 23
+
+Query id: 6fc8be7a-c1e3-42a0-ac99-95f37f0b23fa
+
+   ┌─id─┬─status──┬─price─┬─comment───┐
+1. │ 23 │ success │ 2000  │ Cancelled │
+   └────┴─────────┴───────┴───────────┘
+
+1 row in set. Elapsed: 0.012 sec.
+
+
+
+############################################################ end 3 ########################################################
+############################################################ 4, 5 ########################################################
+
+
+d979b380b3e7 :) CREATE TABLE tbl4
+(   CounterID UInt8,
+    StartDate Date,
+    UserID UInt64
+) ENGINE = MergeTree
+PARTITION BY toYYYYMM(StartDate)
+ORDER BY (CounterID, StartDate);
+
+CREATE TABLE tbl4
+(
+    `CounterID` UInt8,
+    `StartDate` Date,
+    `UserID` UInt64
+)
+ENGINE = MergeTree
+PARTITION BY toYYYYMM(StartDate)
+ORDER BY (CounterID, StartDate)
+
+Query id: 7135038e-b91a-4567-a699-9106b12a3a5c
+
+Ok.
+
+0 rows in set. Elapsed: 0.021 sec.
+
+d979b380b3e7 :)
+d979b380b3e7 :) INSERT INTO tbl4 VALUES(0, '2019-11-11', 1);
+INSERT INTO tbl4 VALUES(1, '2019-11-12', 1);
+
+INSERT INTO tbl4 FORMAT Values
+
+Query id: 81b394d1-a0ad-49b4-8587-fda1f4b0267c
+
+Ok.
+
+1 row in set. Elapsed: 0.010 sec.
+
+
+INSERT INTO tbl4 FORMAT Values
+
+Query id: 96555ca0-a5e2-4907-80b0-94a645966f5c
+
+Ok.
+
+1 row in set. Elapsed: 0.004 sec.
+
+d979b380b3e7 :) select * from tbl4;
+
+SELECT *
+FROM tbl4
+
+Query id: edfa5108-ee12-4fb7-807d-88dfc6e4786f
+
+   ┌─CounterID─┬──StartDate─┬─UserID─┐
+1. │         0 │ 2019-11-11 │      1 │
+   └───────────┴────────────┴────────┘
+   ┌─CounterID─┬──StartDate─┬─UserID─┐
+2. │         1 │ 2019-11-12 │      1 │
+   └───────────┴────────────┴────────┘
+
+2 rows in set. Elapsed: 0.010 sec.
+
+d979b380b3e7 :) CREATE TABLE tbl5
+(   CounterID UInt8,
+    StartDate Date,
+    UserID AggregateFunction(uniq, UInt64)
+) ENGINE = AggregatingMergeTree
+PARTITION BY toYYYYMM(StartDate)
+ORDER BY (CounterID, StartDate);
+
+CREATE TABLE tbl5
+(
+    `CounterID` UInt8,
+    `StartDate` Date,
+    `UserID` AggregateFunction(uniq, UInt64)
+)
+ENGINE = AggregatingMergeTree
+PARTITION BY toYYYYMM(StartDate)
+ORDER BY (CounterID, StartDate)
+
+Query id: 88374544-4628-4c91-b1c1-57366099edd0
+
+Ok.
+
+0 rows in set. Elapsed: 0.016 sec.
+
+d979b380b3e7 :) INSERT INTO tbl5
+select CounterID, StartDate, uniqState(UserID)
+from tbl4
+group by CounterID, StartDate;
+
+INSERT INTO tbl5 VALUES (1,'2019-11-12',1);
+
+
+INSERT INTO tbl5 SELECT
+    CounterID,
+    StartDate,
+    uniqState(UserID)
+FROM tbl4
+GROUP BY
+    CounterID,
+    StartDate
+
+Query id: 35cefcbf-6e12-48a8-86e3-3bddf6cc29ae
+
+Ok.
+
+0 rows in set. Elapsed: 0.062 sec.
+
+
+INSERT INTO tbl5 FORMAT Values
+
+Query id: de696062-5c13-4c86-b539-eb86ada89305
+
+Ok.
+Error on processing query: Code: 53. DB::Exception: Cannot convert UInt64 to AggregateFunction(uniq, UInt64): While executing ValuesBlockInputFormat: data for INSERT was parsed from query. (TYPE_MISMATCH) (version 24.9.2.42 (official build))
+
+d979b380b3e7 :) SELECT uniqMerge(UserID) AS state
+FROM tbl5
+GROUP BY CounterID, StartDate;
+
+
+SELECT uniqMerge(UserID) AS state
+FROM tbl5
+GROUP BY
+    CounterID,
+    StartDate
+
+Query id: 54b05762-c804-45f0-ac45-68f3eb0f30a5
+
+   ┌─state─┐
+1. │     1 │
+2. │     1 │
+   └───────┘
+
+2 rows in set. Elapsed: 0.021 sec.
+
+
+
+############################################################ end 4, 5 ########################################################
+############################################################ 6 ########################################################
+
+d979b380b3e7 :) CREATE TABLE tbl6
+(
+    `id` Int32,
+    `status` String,
+    `price` String,
+    `comment` String,
+    `sign` Int8
+)
+ENGINE = CollapsingMergeTree(sign)
+PRIMARY KEY (id)
+ORDER BY (id, status);
+
+CREATE TABLE tbl6
+(
+    `id` Int32,
+    `status` String,
+    `price` String,
+    `comment` String,
+    `sign` Int8
+)
+ENGINE = CollapsingMergeTree(sign)
+PRIMARY KEY id
+ORDER BY (id, status)
+
+Query id: e373211d-1fb7-4798-8303-be9eac4469b1
+
+Ok.
+
+0 rows in set. Elapsed: 0.013 sec.
+
+d979b380b3e7 :) INSERT INTO tbl6 VALUES (23, 'success', '1000', 'Confirmed', 1);
+INSERT INTO tbl6 VALUES (23, 'success', '1000', 'Confirmed', -1), (23, 'success', '2000', 'Cancelled', 1);
+
+
+INSERT INTO tbl6 FORMAT Values
+
+Query id: abd340de-5c43-426a-bb65-41c8f0f7aaca
+
+Ok.
+
+1 row in set. Elapsed: 0.016 sec.
+
+
+INSERT INTO tbl6 FORMAT Values
+
+Query id: 5d0be4c2-ee62-4ab3-93af-a32597850809
+
+Ok.
+
+2 rows in set. Elapsed: 0.003 sec.
+
+d979b380b3e7 :) SELECT * FROM tbl6;
+
+
+SELECT *
+FROM tbl6
+
+Query id: bd7e2f23-3577-40d5-865f-9b2a574cdfde
+
+   ┌─id─┬─status──┬─price─┬─comment───┬─sign─┐
+1. │ 23 │ success │ 1000  │ Confirmed │    1 │
+   └────┴─────────┴───────┴───────────┴──────┘
+   ┌─id─┬─status──┬─price─┬─comment───┬─sign─┐
+2. │ 23 │ success │ 1000  │ Confirmed │   -1 │
+3. │ 23 │ success │ 2000  │ Cancelled │    1 │
+   └────┴─────────┴───────┴───────────┴──────┘
+
+3 rows in set. Elapsed: 0.009 sec.
+
+d979b380b3e7 :) SELECT * FROM tbl6 FINAL;
+
+
+SELECT *
+FROM tbl6
+FINAL
+
+Query id: 50a232ec-0ed8-484d-8161-dbf82c34e0cf
+
+   ┌─id─┬─status──┬─price─┬─comment───┬─sign─┐
+1. │ 23 │ success │ 2000  │ Cancelled │    1 │
+   └────┴─────────┴───────┴───────────┴──────┘
+
+1 row in set. Elapsed: 0.017 sec.
+
+
+############################################################ end 6 ########################################################
+############################################################ 7 ########################################################
+
+############################################################ end 7 ########################################################
