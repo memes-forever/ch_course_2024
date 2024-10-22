@@ -1,0 +1,293 @@
+############################################################ 0 ########################################################
+-- create object & insert rows
+
+4bc428cb4f18 :) CREATE DATABASE homework_four ENGINE = Atomic;
+
+CREATE DATABASE homework_four
+ENGINE = Atomic
+
+Query id: ab2147aa-299a-4476-9afa-c5030f1a277b
+
+Ok.
+
+0 rows in set. Elapsed: 0.009 sec.
+
+4bc428cb4f18 :) use homework_four;
+
+USE homework_four
+
+Query id: 696c6a75-b176-46a3-9206-1d15121d3230
+
+Ok.
+
+0 rows in set. Elapsed: 0.009 sec.
+
+4bc428cb4f18 :) CREATE TABLE transactions (
+    transaction_id UInt32,
+    user_id UInt32,
+    product_id UInt32,
+    quantity UInt8,
+    price Float32,
+    transaction_date Date
+) ENGINE = MergeTree()
+ORDER BY (transaction_id);
+
+CREATE TABLE transactions
+(
+    `transaction_id` UInt32,
+    `user_id` UInt32,
+    `product_id` UInt32,
+    `quantity` UInt8,
+    `price` Float32,
+    `transaction_date` Date
+)
+ENGINE = MergeTree
+ORDER BY transaction_id
+
+Query id: d831b303-97ff-489c-bc40-f478ac5884fe
+
+Ok.
+
+0 rows in set. Elapsed: 0.017 sec.
+
+4bc428cb4f18 :) insert into transactions values
+(1000, 1, 1, 34, 994, '2024-10-22'),
+(1001, 1, 2, 3, 999, '2024-10-22'),
+(1002, 2, 1, 6, 3432, '2024-10-22'),
+(1003, 2, 3, 56, 34, '2024-10-22'),
+(1004, 3, 2, 22, 6, '2024-10-22')
+
+INSERT INTO transactions FORMAT Values
+
+Query id: 8b20cc41-0e68-447b-934d-b059b53dde30
+
+Ok.
+
+5 rows in set. Elapsed: 0.013 sec.
+
+4bc428cb4f18 :) select * from transactions;
+
+SELECT *
+FROM transactions
+
+Query id: 8d35df93-e3b4-49df-bc24-90e5b175dbb0
+
+   ┌─transaction_id─┬─user_id─┬─product_id─┬─quantity─┬─price─┬─transaction_date─┐
+1. │           1000 │       1 │          1 │       34 │   994 │       2024-10-22 │
+2. │           1001 │       1 │          2 │        3 │   999 │       2024-10-22 │
+3. │           1002 │       2 │          1 │        6 │  3432 │       2024-10-22 │
+4. │           1003 │       2 │          3 │       56 │    34 │       2024-10-22 │
+5. │           1004 │       3 │          2 │       22 │     6 │       2024-10-22 │
+   └────────────────┴─────────┴────────────┴──────────┴───────┴──────────────────┘
+
+5 rows in set. Elapsed: 0.005 sec.
+
+
+############################################################ end 0 ########################################################
+############################################################ 1 ########################################################
+
+-- Рассчитайте общий доход от всех операций.
+4bc428cb4f18 :) select sum(quantity*price) as all_price from transactions
+
+SELECT sum(quantity * price) AS all_price
+FROM transactions
+
+Query id: 92338f1b-8485-4711-b568-f8bbaa159e96
+
+   ┌─all_price─┐
+1. │     59421 │
+   └───────────┘
+
+1 row in set. Elapsed: 0.029 sec.
+
+-- Найдите средний доход с одной сделки.
+SELECT avg(quantity * price) AS all_price
+FROM transactions
+
+Query id: f463d1f2-0de5-4590-8e0b-235e3b490933
+
+   ┌─all_price─┐
+1. │   11884.2 │
+   └───────────┘
+
+1 row in set. Elapsed: 0.014 sec.
+
+
+-- Определите общее количество проданной продукции.
+4bc428cb4f18 :) select sum(quantity) from transactions;
+
+SELECT sum(quantity)
+FROM transactions
+
+Query id: 60e13d9a-1d25-4a49-9ec5-b3695f1922d8
+
+   ┌─sum(quantity)─┐
+1. │           121 │
+   └───────────────┘
+
+1 row in set. Elapsed: 0.012 sec.
+
+-- Подсчитайте количество уникальных пользователей, совершивших покупку.
+4bc428cb4f18 :) select uniq(user_id) from transactions;
+
+SELECT uniq(user_id)
+FROM transactions
+
+Query id: 5d24dfdb-9c12-4a56-9492-d47a6ceb4ca4
+
+   ┌─uniq(user_id)─┐
+1. │             3 │
+   └───────────────┘
+
+1 row in set. Elapsed: 0.006 sec.
+
+
+############################################################ end 1 ########################################################
+############################################################ 2 ########################################################
+
+-- Преобразуйте `transaction_date` в строку формата `YYYY-MM-DD`.
+4bc428cb4f18 :) select toDate(transaction_date) from transactions;
+
+SELECT toDate(transaction_date)
+FROM transactions
+
+Query id: 1708c184-1141-497e-89e0-60a8ee17be47
+
+   ┌─toDate(transaction_date)─┐
+1. │               2024-10-22 │
+2. │               2024-10-22 │
+3. │               2024-10-22 │
+4. │               2024-10-22 │
+5. │               2024-10-22 │
+   └──────────────────────────┘
+
+5 rows in set. Elapsed: 0.017 sec.
+
+
+-- Извлеките год и месяц из `transaction_date`.
+4bc428cb4f18 :) select toYYYYMM(transaction_date) from transactions;
+
+SELECT toYYYYMM(transaction_date)
+FROM transactions
+
+Query id: 6f7bbd40-ec95-479e-bbb2-378904daed7e
+
+   ┌─toYYYYMM(transaction_date)─┐
+1. │                     202410 │
+2. │                     202410 │
+3. │                     202410 │
+4. │                     202410 │
+5. │                     202410 │
+   └────────────────────────────┘
+
+5 rows in set. Elapsed: 0.009 sec.
+
+
+-- Округлите `price` до ближайшего целого числа.
+4bc428cb4f18 :) select round(price)  from transactions;
+
+SELECT round(price)
+FROM transactions
+
+Query id: 6009c620-194a-42e2-ba59-8665a80f2173
+
+   ┌─round(price)─┐
+1. │          994 │
+2. │          999 │
+3. │         3432 │
+4. │           34 │
+5. │            6 │
+   └──────────────┘
+
+5 rows in set. Elapsed: 0.014 sec.
+
+
+-- Преобразуйте `transaction_id` в строку.
+4bc428cb4f18 :) select toString(transaction_id)  from transactions;
+
+SELECT toString(transaction_id)
+FROM transactions
+
+Query id: 2a1fdb54-42d3-4c89-8ec3-1e6e0a3f050c
+
+   ┌─toString(transaction_id)─┐
+1. │ 1000                     │
+2. │ 1001                     │
+3. │ 1002                     │
+4. │ 1003                     │
+5. │ 1004                     │
+   └──────────────────────────┘
+
+5 rows in set. Elapsed: 0.009 sec.
+
+
+
+############################################################ end 2 ########################################################
+############################################################ 3 ########################################################
+
+-- Создайте простую UDF для расчета общей стоимости транзакции.
+4bc428cb4f18 :) CREATE FUNCTION all_price AS (_price, _quantity) -> _price*_quantity;
+
+CREATE FUNCTION all_price AS (_price, _quantity) -> (_price * _quantity)
+
+Query id: 5e089b6e-175e-4df8-934a-d7eee0dd2306
+
+Ok.
+
+0 rows in set. Elapsed: 0.006 sec.
+
+-- Используйте созданную UDF для расчета общей цены для каждой транзакции.
+4bc428cb4f18 :) select all_price(price, quantity) from transactions;
+
+SELECT all_price(price, quantity)
+FROM transactions
+
+Query id: 72348f06-35c8-4081-9a27-71de50967b63
+
+   ┌─all_price(price, quantity)─┐
+1. │                      33796 │
+2. │                       2997 │
+3. │                      20592 │
+4. │                       1904 │
+5. │                        132 │
+   └────────────────────────────┘
+
+5 rows in set. Elapsed: 0.017 sec.
+
+
+-- Создайте UDF для классификации транзакций на «высокоценные» и «малоценные» на основе порогового значения (например, 100).
+4bc428cb4f18 :) CREATE FUNCTION trans_class AS (_price, _quantity) -> if(_price*_quantity>100, 'высокоценные', 'малоценные');
+
+CREATE FUNCTION trans_class AS (_price, _quantity) -> if((_price * _quantity) > 100, 'высокоценные', 'малоценные')
+
+Query id: ab3cf638-6dac-4a22-9383-009ce7c596c1
+
+Ok.
+
+0 rows in set. Elapsed: 0.005 sec.
+
+
+-- Примените UDF для категоризации каждой транзакции.
+4bc428cb4f18 :) select trans_class(price, quantity) from transactions;
+
+SELECT trans_class(price, quantity)
+FROM transactions
+
+Query id: c78e9c5e-80d3-46fa-976a-844984ec725b
+
+   ┌─trans_class(price, quantity)─┐
+1. │ высокоценные                 │
+2. │ высокоценные                 │
+3. │ высокоценные                 │
+4. │ высокоценные                 │
+5. │ высокоценные                 │
+   └──────────────────────────────┘
+
+5 rows in set. Elapsed: 0.017 sec.
+
+
+
+############################################################ end 3 ########################################################
+############################################################ 4 ########################################################
+
+############################################################ end 4 ########################################################
