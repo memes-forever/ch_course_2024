@@ -1,0 +1,225 @@
+############################################################ 1 ########################################################
+
+d979b380b3e7 :) CREATE DATABASE imdb;
+
+CREATE TABLE imdb.actors
+(
+    id         UInt32,
+    first_name String,
+    last_name  String,
+    gender     FixedString(1)
+) ENGINE = MergeTree ORDER BY (id, first_name, last_name, gender);
+
+
+CREATE DATABASE imdb
+
+Query id: fd4bfc5e-143f-4e93-a36b-1f40d3b20553
+
+Ok.
+
+0 rows in set. Elapsed: 0.009 sec.
+
+
+CREATE TABLE imdb.actors
+(
+    `id` UInt32,
+    `first_name` String,
+    `last_name` String,
+    `gender` FixedString(1)
+)
+ENGINE = MergeTree
+ORDER BY (id, first_name, last_name, gender)
+
+Query id: eea745a2-cc6b-43ef-964d-392d4760f9d1
+
+Ok.
+
+0 rows in set. Elapsed: 0.009 sec.
+
+d979b380b3e7 :)
+d979b380b3e7 :) use imdb;
+
+USE imdb
+
+Query id: 9c7356cb-6984-4ec0-bfd3-1e7c24b5b301
+
+Ok.
+
+0 rows in set. Elapsed: 0.002 sec.
+
+d979b380b3e7 :)
+CREATE TABLE imdb.genres
+(
+    movie_id UInt32,
+    genre    String
+) ENGINE = MergeTree ORDER BY (movie_id, genre);
+
+CREATE TABLE imdb.movies
+(
+    id   UInt32,
+CREATE TABLE imdb.genres
+(
+    movie_id UInt32,
+    genre    String
+) ENGINE = MergeTree ORDER BY (movie_id, genre);
+
+CREATE TABLE imdb.movies
+(
+    id   UInt32,
+    name String,
+    year UInt32,
+    rank Float32 DEFAULT 0
+) ENGINE = MergeTree ORDER BY (id, name, year);
+
+CREATE TABLE imdb.roles
+(
+    actor_id   UInt32,
+    movie_id   UInt32,
+    role       String,
+    created_at DateTime DEFAULT now()
+) ENGINE = MergeTree ORDER BY (actor_id, movie_id);
+
+
+CREATE TABLE imdb.genres
+(
+    `movie_id` UInt32,
+    `genre` String
+)
+ENGINE = MergeTree
+ORDER BY (movie_id, genre)
+
+Query id: 33f054cb-b605-467b-ad7a-c73fde80d363
+
+Ok.
+
+0 rows in set. Elapsed: 0.015 sec.
+
+
+CREATE TABLE imdb.movies
+(
+    `id` UInt32,
+    `name` String,
+    `year` UInt32,
+    `rank` Float32 DEFAULT 0
+)
+ENGINE = MergeTree
+ORDER BY (id, name, year)
+
+Query id: bfa70806-f7f9-4d10-81f3-8a2221a96a6f
+
+Ok.
+
+0 rows in set. Elapsed: 0.010 sec.
+
+
+CREATE TABLE imdb.roles
+(
+    `actor_id` UInt32,
+    `movie_id` UInt32,
+    `role` String,
+    `created_at` DateTime DEFAULT now()
+)
+ENGINE = MergeTree
+ORDER BY (actor_id, movie_id)
+
+Query id: 70332332-2dc3-4878-bd45-f21343582622
+
+Ok.
+
+0 rows in set. Elapsed: 0.006 sec.
+
+############################################################ end 1 ########################################################
+############################################################ 2 ########################################################
+
+d979b380b3e7 :) INSERT INTO imdb.actors
+SELECT *
+FROM s3('https://datasets-documentation.s3.eu-west-3.amazonaws.com/imdb/imdb_ijs_actors.tsv.gz',
+'TSVWithNames');
+
+
+INSERT INTO imdb.actors SELECT *
+FROM s3('https://datasets-documentation.s3.eu-west-3.amazonaws.com/imdb/imdb_ijs_actors.tsv.gz', 'TSVWithNames')
+
+Query id: 127fee5f-fbd4-4a9f-9207-ca432191c32a
+
+Ok.
+
+0 rows in set. Elapsed: 5.866 sec. Processed 817.72 thousand rows, 25.60 MB (139.40 thousand rows/s., 4.36 MB/s.)
+Peak memory usage: 41.00 MiB.
+
+d979b380b3e7 :) INSERT INTO imdb.genres
+SELECT *
+FROM s3('https://datasets-documentation.s3.eu-west-3.amazonaws.com/imdb/imdb_ijs_movies_genres.tsv.gz',
+'TSVWithNames');
+
+
+INSERT INTO imdb.genres SELECT *
+FROM s3('https://datasets-documentation.s3.eu-west-3.amazonaws.com/imdb/imdb_ijs_movies_genres.tsv.gz', 'TSVWithNames')
+
+Query id: 4c20dbb1-ffa1-4a0f-843c-56339ca216e9
+
+Ok.
+
+0 rows in set. Elapsed: 1.943 sec. Processed 395.12 thousand rows, 6.81 MB (203.40 thousand rows/s., 3.50 MB/s.)
+Peak memory usage: 15.01 MiB.
+
+d979b380b3e7 :) INSERT INTO imdb.movies
+SELECT *
+FROM s3('https://datasets-documentation.s3.eu-west-3.amazonaws.com/imdb/imdb_ijs_movies.tsv.gz',
+'TSVWithNames');
+
+
+INSERT INTO imdb.movies SELECT *
+FROM s3('https://datasets-documentation.s3.eu-west-3.amazonaws.com/imdb/imdb_ijs_movies.tsv.gz', 'TSVWithNames')
+
+Query id: 3254845d-0db2-4c4d-821a-ef21a4c13622
+
+Ok.
+
+0 rows in set. Elapsed: 2.853 sec. Processed 388.27 thousand rows, 11.74 MB (136.07 thousand rows/s., 4.11 MB/s.)
+Peak memory usage: 32.70 MiB.
+
+d979b380b3e7 :) INSERT INTO imdb.roles(actor_id, movie_id, role)
+SELECT actor_id, movie_id, role
+FROM s3('https://datasets-documentation.s3.eu-west-3.amazonaws.com/imdb/imdb_ijs_roles.tsv.gz',
+'TSVWithNames');
+
+
+INSERT INTO imdb.roles (actor_id, movie_id, role) SELECT
+    actor_id,
+    movie_id,
+    role
+FROM s3('https://datasets-documentation.s3.eu-west-3.amazonaws.com/imdb/imdb_ijs_roles.tsv.gz', 'TSVWithNames')
+
+Query id: 370685cc-950d-4085-a1cd-d9f9d8dd5cdb
+
+Ok.
+
+0 rows in set. Elapsed: 14.596 sec. Processed 3.43 million rows, 82.76 MB (235.13 thousand rows/s., 5.67 MB/s.)
+Peak memory usage: 86.92 MiB.
+
+############################################################ end 2 ########################################################
+############################################################ 3 a ########################################################
+Найти жанры для каждого фильма
+
+############################################################ end 3 a ########################################################
+############################################################ 3 b ########################################################
+Запросить все фильмы, у которых нет жанра
+
+############################################################ end 3 b ########################################################
+############################################################ 3 c ########################################################
+Объединить каждую строку из таблицы “Фильмы” с каждой строкой из таблицы “Жанры”
+
+############################################################ end 3 c ########################################################
+############################################################ 3 d ########################################################
+Найти жанры для каждого фильма, НЕ используя INNER JOIN
+
+############################################################ end 3 d ########################################################
+############################################################ 3 e ########################################################
+Найти всех актеров и актрис, снявшихся в фильме в 2023 году
+
+############################################################ end 3 e ########################################################
+############################################################ 3 f ########################################################
+Запросить все фильмы, у которых нет жанра, через ANTI JOIN
+
+############################################################ end 3 f ########################################################
