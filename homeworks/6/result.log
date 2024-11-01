@@ -200,26 +200,311 @@ Peak memory usage: 86.92 MiB.
 
 ############################################################ end 2 ########################################################
 ############################################################ 3 a ########################################################
+
 Найти жанры для каждого фильма
+
+d979b380b3e7 :) select movies.id, movies.name, groupArray(genres.genre) as genres
+from imdb.movies
+left join imdb.genres on movies.id = genres.movie_id
+group by movies.id, movies.name
+order by count(genres.genre) desc
+limit 10
+
+SELECT
+    movies.id,
+    movies.name,
+    groupArray(genres.genre) AS genres
+FROM imdb.movies
+LEFT JOIN imdb.genres ON movies.id = genres.movie_id
+GROUP BY
+    movies.id,
+    movies.name
+ORDER BY count(genres.genre) DESC
+LIMIT 10
+
+Query id: 9aaf732b-2aae-425a-8342-e8d889a66afd
+
+    ┌─────id─┬─name────────────────────────────┬─genres─────────────────────────────────────────────────────────────────────────────────────────────────────┐
+ 1. │ 122529 │ Finaru fuantaj VI               │ ['Action','Sci-Fi','Thriller','War','Adventure','Animation','Comedy','Drama','Fantasy','Horror','Mystery'] │
+ 2. │ 113329 │ Final Fantasy VII               │ ['Action','Sci-Fi','Thriller','Adventure','Animation','Comedy','Drama','Fantasy','Horror','Mystery']       │
+ 3. │ 350189 │ Vampire Hunter D                │ ['Action','Thriller','Adventure','Animation','Drama','Fantasy','Horror','Romance','Sci-Fi']                │
+ 4. │ 349066 │ Utopia's Redemption             │ ['Action','Thriller','Adventure','Comedy','Crime','Drama','Family','Sci-Fi','Short']                       │
+ 5. │ 350246 │ Vampires, Les                   │ ['Action','Adventure','Crime','Drama','Fantasy','Mystery','Thriller','War']                                │
+ 6. │ 276845 │ Return to Castle Wolfenstein    │ ['Action','Adventure','Animation','Drama','Horror','Sci-Fi','Thriller','War']                              │
+ 7. │ 212067 │ Metoroporisu                    │ ['Action','Adventure','Animation','Crime','Drama','Romance','Sci-Fi','Thriller']                           │
+ 8. │ 113331 │ Final Fantasy VIII              │ ['Action','Adventure','Animation','Drama','Fantasy','Romance','Sci-Fi','War']                              │
+ 9. │  20625 │ Around the World in Eighty Days │ ['Action','Adventure','Comedy','Drama','Fantasy','Romance','Sci-Fi','Western']                             │
+10. │ 177327 │ King Kong                       │ ['Adventure','Comedy','Family','Fantasy','Horror','Romance','Sci-Fi','Thriller']                           │
+    └────────┴─────────────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+10 rows in set. Elapsed: 0.100 sec. Processed 783.39 thousand rows, 19.95 MB (7.87 million rows/s., 200.33 MB/s.)
+Peak memory usage: 164.19 MiB.
 
 ############################################################ end 3 a ########################################################
 ############################################################ 3 b ########################################################
+
 Запросить все фильмы, у которых нет жанра
+
+d979b380b3e7 :) SELECT
+    movies.id,
+    movies.name
+FROM imdb.movies
+WHERE movies.id not in (select genres.movie_id from imdb.genres)
+LIMIT 10
+
+SELECT
+    movies.id,
+    movies.name
+FROM imdb.movies
+WHERE movies.id NOT IN (
+    SELECT genres.movie_id
+    FROM imdb.genres
+)
+LIMIT 10
+
+Query id: 013aa38e-7814-4354-990c-c1fdc78aa32a
+
+    ┌─────id─┬─name──────────────────────────┐
+ 1. │ 210056 │ Mein Wille ist Gesetz         │
+ 2. │ 210057 │ Meine 16 Shne                 │
+ 3. │ 210058 │ Meine 99 Brute                │
+ 4. │ 210060 │ Meine Cousine aus Warschau    │
+ 5. │ 210064 │ Meine Frau erfhrt kein Wort   │
+ 6. │ 210068 │ Meine Frau ist jetzt der Boss │
+ 7. │ 210069 │ Meine Frau macht Dummheiten   │
+ 8. │ 210074 │ Meine Frau, die Perle         │
+ 9. │ 210075 │ Meine Frau, die Schtzenknigin │
+10. │ 210080 │ Meine Herren Shne             │
+    └────────┴───────────────────────────────┘
+
+10 rows in set. Elapsed: 0.052 sec. Processed 558.96 thousand rows, 6.70 MB (10.72 million rows/s., 128.56 MB/s.)
+Peak memory usage: 10.95 MiB.
 
 ############################################################ end 3 b ########################################################
 ############################################################ 3 c ########################################################
+
 Объединить каждую строку из таблицы “Фильмы” с каждой строкой из таблицы “Жанры”
+
+select count() from imdb.genres;
+
+SELECT count()
+FROM imdb.movies
+
+Query id: c2f3187c-b77f-4aba-9b48-fa98de5f54d3
+
+   ┌─count()─┐
+1. │  388269 │
+   └─────────┘
+
+1 row in set. Elapsed: 0.011 sec.
+
+
+SELECT count()
+FROM imdb.genres
+
+Query id: 933f7abd-12ba-4f10-9ec8-bdc105e0dad5
+
+   ┌─count()─┐
+1. │  395119 │
+   └─────────┘
+
+1 row in set. Elapsed: 0.003 sec.
+
+d979b380b3e7 :) select 388269*395119;
+
+SELECT 388269 * 395119
+
+Query id: 62cae85e-6bcb-4bbc-8fd3-86a28e360378
+
+   ┌─multiply(388269, 395119)─┐
+1. │             153412459011 │ -- 153.41 billion
+   └──────────────────────────┘
+
+1 row in set. Elapsed: 0.016 sec.
+
+d979b380b3e7 :) SELECT
+    count()
+FROM imdb.movies
+JOIN imdb.genres on 1
+
+SELECT count()
+FROM imdb.movies
+INNER JOIN imdb.genres ON 1
+
+Query id: 792f3a93-03da-4aa5-a836-3e96ed3672ea
+
+   ┌──────count()─┐
+1. │ 153412459011 │ -- 153.41 billion
+   └──────────────┘
+
+1 row in set. Elapsed: 18.237 sec. Processed 783.39 thousand rows, 3.13 MB (42.96 thousand rows/s., 171.82 KB/s.)
+Peak memory usage: 2.02 MiB.
 
 ############################################################ end 3 c ########################################################
 ############################################################ 3 d ########################################################
+
 Найти жанры для каждого фильма, НЕ используя INNER JOIN
+
+d979b380b3e7 :) select movies.id, movies.name, groupArray(genres.genre) as genres
+from imdb.movies
+left join imdb.genres on movies.id = genres.movie_id
+where genres.movie_id is not null
+group by movies.id, movies.name
+order by count(genres.genre) desc
+limit 10
+
+SELECT
+    movies.id,
+    movies.name,
+    groupArray(genres.genre) AS genres
+FROM imdb.movies
+LEFT JOIN imdb.genres ON movies.id = genres.movie_id
+WHERE genres.movie_id IS NOT NULL
+GROUP BY
+    movies.id,
+    movies.name
+ORDER BY count(genres.genre) DESC
+LIMIT 10
+
+Query id: 96d8b85f-bedf-4dd3-a39c-e84b6923f548
+
+    ┌─────id─┬─name────────────────────────────┬─genres─────────────────────────────────────────────────────────────────────────────────────────────────────┐
+ 1. │ 122529 │ Finaru fuantaj VI               │ ['Action','Sci-Fi','Thriller','War','Adventure','Animation','Comedy','Drama','Fantasy','Horror','Mystery'] │
+ 2. │ 113329 │ Final Fantasy VII               │ ['Action','Sci-Fi','Thriller','Adventure','Animation','Comedy','Drama','Fantasy','Horror','Mystery']       │
+ 3. │ 349066 │ Utopia's Redemption             │ ['Action','Thriller','Adventure','Comedy','Crime','Drama','Family','Sci-Fi','Short']                       │
+ 4. │ 350189 │ Vampire Hunter D                │ ['Action','Thriller','Adventure','Animation','Drama','Fantasy','Horror','Romance','Sci-Fi']                │
+ 5. │  69602 │ Conker's Bad Fur Day            │ ['Action','Animation','Comedy','Crime','Fantasy','Horror','Thriller','War']                                │
+ 6. │ 113331 │ Final Fantasy VIII              │ ['Action','Adventure','Animation','Drama','Fantasy','Romance','Sci-Fi','War']                              │
+ 7. │  20625 │ Around the World in Eighty Days │ ['Action','Adventure','Comedy','Drama','Fantasy','Romance','Sci-Fi','Western']                             │
+ 8. │ 103180 │ Escaflowne (2000/II)            │ ['Action','Adventure','Animation','Drama','Fantasy','Romance','Sci-Fi','Thriller']                         │
+ 9. │ 177327 │ King Kong                       │ ['Adventure','Comedy','Family','Fantasy','Horror','Romance','Sci-Fi','Thriller']                           │
+10. │ 350246 │ Vampires, Les                   │ ['Action','Adventure','Crime','Drama','Fantasy','Mystery','Thriller','War']                                │
+    └────────┴─────────────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+10 rows in set. Elapsed: 0.136 sec. Processed 783.39 thousand rows, 19.95 MB (5.75 million rows/s., 146.52 MB/s.)
+Peak memory usage: 163.58 MiB.
 
 ############################################################ end 3 d ########################################################
 ############################################################ 3 e ########################################################
+
 Найти всех актеров и актрис, снявшихся в фильме в 2023 году
+??????? 2023 года нет в источнике, максимально 2008
+
+d979b380b3e7 :) select max(year)
+from imdb.movies
+-- where movies.year = 2023
+limit 10;
+
+SELECT max(year)
+FROM imdb.movies
+LIMIT 10
+
+Query id: 39ada5c2-df94-48e5-a769-e6b23a407034
+
+   ┌─max(year)─┐
+1. │      2008 │
+   └───────────┘
+
+1 row in set. Elapsed: 0.011 sec. Processed 388.27 thousand rows, 1.55 MB (34.37 million rows/s., 137.50 MB/s.)
+Peak memory usage: 312.63 KiB.
+
+d979b380b3e7 :) select *
+from imdb.movies
+left join imdb.roles on movies.id = roles.movie_id
+left join imdb.actors on roles.actor_id = actors.id
+where movies.year = 2008
+limit 10;
+
+SELECT *
+FROM imdb.movies
+LEFT JOIN imdb.roles ON movies.id = roles.movie_id
+LEFT JOIN imdb.actors ON roles.actor_id = actors.id
+WHERE movies.year = 2008
+LIMIT 10
+
+Query id: 8a0ea271-365e-4f73-a523-976752ae250c
+
+   ┌─movies.id─┬─name───────────────────────────────────┬─year─┬─rank─┬─actor_id─┬─movie_id─┬─role─┬──────────created_at─┬─actors.id─┬─first_name─┬─last_name─┬─gender─┐
+1. │    139653 │ Harry Potter and the Half-Blood Prince │ 2008 │    0 │        0 │        0 │      │ 1970-01-01 00:00:00 │         0 │            │           │        │
+   └───────────┴────────────────────────────────────────┴──────┴──────┴──────────┴──────────┴──────┴─────────────────────┴───────────┴────────────┴───────────┴────────┘
+
+1 row in set. Elapsed: 0.349 sec. Processed 4.64 million rows, 134.95 MB (13.28 million rows/s., 386.43 MB/s.)
+Peak memory usage: 405.28 MiB.
+
+d979b380b3e7 :) select *
+from imdb.movies
+left join imdb.roles on movies.id = roles.movie_id
+left join imdb.actors on roles.actor_id = actors.id
+where movies.year = 2007
+limit 10;
+
+SELECT *
+FROM imdb.movies
+LEFT JOIN imdb.roles ON movies.id = roles.movie_id
+LEFT JOIN imdb.actors ON roles.actor_id = actors.id
+WHERE movies.year = 2007
+LIMIT 10
+
+Query id: 32a068a7-b698-4343-b4c0-1005c90e4049
+
+   ┌─movies.id─┬─name────┬─year─┬─rank─┬─actor_id─┬─movie_id─┬─role────────────┬──────────created_at─┬─actors.id─┬─first_name─┬─last_name─┬─gender─┐
+1. │    339929 │ Tripoli │ 2007 │    0 │   248756 │   339929 │ Hamet Karamanli │ 2024-11-01 11:57:59 │    248756 │ Ben        │ Kingsley  │ M      │
+   └───────────┴─────────┴──────┴──────┴──────────┴──────────┴─────────────────┴─────────────────────┴───────────┴────────────┴───────────┴────────┘
+   ┌─movies.id─┬─name───────────────┬─year─┬─rank─┬─actor_id─┬─movie_id─┬─role─────┬──────────created_at─┬─actors.id─┬─first_name─┬─last_name───┬─gender─┐
+2. │    272424 │ Rapunzel Unbraided │ 2007 │    0 │   578585 │   272424 │ Rapunzel │ 2024-11-01 11:57:59 │    578585 │ Kristin    │ Chenoweth   │ F      │
+3. │    272424 │ Rapunzel Unbraided │ 2007 │    0 │   837649 │   272424 │ Claire   │ 2024-11-01 11:57:59 │    837649 │ Reese      │ Witherspoon │ F      │
+   └───────────┴────────────────────┴──────┴──────┴──────────┴──────────┴──────────┴─────────────────────┴───────────┴────────────┴─────────────┴────────┘
+   ┌─movies.id─┬─name─────────┬─year─┬─rank─┬─actor_id─┬─movie_id─┬─role─┬──────────created_at─┬─actors.id─┬─first_name─┬─last_name─┬─gender─┐
+4. │     92850 │ DragonBall Z │ 2007 │    0 │        0 │        0 │      │ 1970-01-01 00:00:00 │         0 │            │           │        │
+   └───────────┴──────────────┴──────┴──────┴──────────┴──────────┴──────┴─────────────────────┴───────────┴────────────┴───────────┴────────┘
+   ┌─movies.id─┬─name──────────────────────────────────────┬─year─┬─rank─┬─actor_id─┬─movie_id─┬─role──────────┬──────────created_at─┬─actors.id─┬─first_name─┬─last_name─┬─gender─┐
+5. │    139654 │ Harry Potter and the Order of the Phoenix │ 2007 │    0 │   222966 │   139654 │ Lucius Malfoy │ 2024-11-01 11:57:59 │    222966 │ Jason      │ Isaacs    │ M      │
+   └───────────┴───────────────────────────────────────────┴──────┴──────┴──────────┴──────────┴───────────────┴─────────────────────┴───────────┴────────────┴───────────┴────────┘
+   ┌─movies.id─┬─name───────────────────────┬─year─┬─rank─┬─actor_id─┬─movie_id─┬─role─┬──────────created_at─┬─actors.id─┬─first_name─┬─last_name─┬─gender─┐
+6. │    347931 │ Untitled Star Trek Prequel │ 2007 │    0 │        0 │        0 │      │ 1970-01-01 00:00:00 │         0 │            │           │        │
+7. │    359289 │ War of the Red Cliff, The  │ 2007 │    0 │        0 │        0 │      │ 1970-01-01 00:00:00 │         0 │            │           │        │
+   └───────────┴────────────────────────────┴──────┴──────┴──────────┴──────────┴──────┴─────────────────────┴───────────┴────────────┴───────────┴────────┘
+   ┌─movies.id─┬─name─────────┬─year─┬─rank─┬─actor_id─┬─movie_id─┬─role────────────────────┬──────────created_at─┬─actors.id─┬─first_name─┬─last_name─┬─gender─┐
+8. │    311040 │ Spider-Man 3 │ 2007 │    0 │   292847 │   311040 │ Peter Parker/Spider-Man │ 2024-11-01 11:57:59 │    292847 │ Tobey      │ Maguire   │ M      │
+   └───────────┴──────────────┴──────┴──────┴──────────┴──────────┴─────────────────────────┴─────────────────────┴───────────┴────────────┴───────────┴────────┘
+
+8 rows in set. Elapsed: 0.223 sec. Processed 4.64 million rows, 135.81 MB (20.77 million rows/s., 608.09 MB/s.)
+Peak memory usage: 411.13 MiB.
 
 ############################################################ end 3 e ########################################################
 ############################################################ 3 f ########################################################
+
 Запросить все фильмы, у которых нет жанра, через ANTI JOIN
+
+d979b380b3e7 :) select movies.id, movies.name, genres.*
+from imdb.movies
+Anti join imdb.genres on movies.id = genres.movie_id
+limit 10
+
+SELECT
+    movies.id,
+    movies.name,
+    genres.*
+FROM imdb.movies
+ANTI LEFT JOIN imdb.genres ON movies.id = genres.movie_id
+LIMIT 10
+
+Query id: c159242a-bf07-4731-b780-ef6ee4f72624
+
+    ┌─────id─┬─name───────────────────────────────┬─movie_id─┬─genre─┐
+ 1. │ 106172 │ Express Train on a Railway Cutting │   106172 │       │
+ 2. │ 106175 │ Expression, An                     │   106175 │       │
+ 3. │ 106179 │ Expropiacin                        │   106179 │       │
+ 4. │ 106180 │ Expropiacin, La                    │   106180 │       │
+ 5. │ 106182 │ Expulsion from Hell                │   106182 │       │
+ 6. │ 106185 │ Expsito, El                        │   106185 │       │
+ 7. │ 106188 │ Exquisite Corpses                  │   106188 │       │
+ 8. │ 106189 │ Exquisite Excesses                 │   106189 │       │
+ 9. │ 106190 │ Exquisite Feet                     │   106190 │       │
+10. │ 106197 │ Extase                             │   106197 │       │
+    └────────┴────────────────────────────────────┴──────────┴───────┘
+
+10 rows in set. Elapsed: 0.042 sec. Processed 558.96 thousand rows, 12.79 MB (13.47 million rows/s., 308.08 MB/s.)
+Peak memory usage: 43.05 MiB.
 
 ############################################################ end 3 f ########################################################
