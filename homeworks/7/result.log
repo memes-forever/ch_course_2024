@@ -1,0 +1,173 @@
+############################################################ 1 ########################################################
+Создать таблицу с полями:
+user_id UInt64,
+action String,
+expense UInt64
+
+CREATE DATABASE homework_7
+
+Query id: d9f35d09-b66c-45c0-aa2c-ee37f3851f3f
+
+Ok.
+
+0 rows in set. Elapsed: 0.011 sec.
+
+
+USE homework_7
+
+Query id: b9e2a878-6940-45b6-860b-b7a5b487da2f
+
+Ok.
+
+0 rows in set. Elapsed: 0.001 sec.
+
+CREATE TABLE tbl_1
+(
+    `user_id` UInt64,
+    `action` String,
+    `expense` UInt64
+)
+ENGINE = MergeTree
+ORDER BY user_id
+
+Query id: cf3bd467-0a4d-4d37-8276-55262383d857
+
+Ok.
+
+0 rows in set. Elapsed: 0.007 sec.
+
+############################################################ end 1 ########################################################
+############################################################ 2 ########################################################
+Создать словарь, в качестве ключа user_id, в качестве атрибута email String, источник словаря любой вам удобный, например file.
+
+
+CREATE TABLE tbl_2
+(
+    `user_id` UInt64,
+    `email` String
+)
+ENGINE = MergeTree
+ORDER BY user_id
+
+Query id: 2592a81b-2532-4bd0-ad3a-6c37b685721b
+
+Ok.
+
+0 rows in set. Elapsed: 0.014 sec.
+
+
+CREATE DICTIONARY dict_1
+(
+    `user_id` UInt64,
+    `email` String
+)
+PRIMARY KEY user_id
+SOURCE(CLICKHOUSE(DB homework_7 TABLE tbl_2))
+LIFETIME(MIN 0 MAX 300)
+LAYOUT(FLAT)
+
+Query id: ae16764c-179c-4715-a53f-c27d152111d7
+
+Ok.
+
+0 rows in set. Elapsed: 0.014 sec.
+
+############################################################ end 2 ########################################################
+############################################################ 3 ########################################################
+Наполнить таблицу и источник любыми данными, с низкоардинальными значениями для поля action и хотя бы по несколько повторящихся строк для каждого user_id
+
+
+insert into tbl_1 values
+(1, 'foo', 34),
+(2, 'bar', 23),
+(3, 'foobar', 65),
+(4, 'barfoo', 44),
+(5, '...', 78)
+
+INSERT INTO tbl_1 FORMAT Values
+
+Query id: 83e8c5dd-c403-47f4-8e44-3a7622a71f37
+
+Ok.
+
+5 rows in set. Elapsed: 0.013 sec.
+
+insert into tbl_2 values
+(1, 'foo@bar'),
+(2, 'bar@foo'),
+(2, 'wife@jizni.net')
+
+INSERT INTO tbl_2 FORMAT Values
+
+Query id: 5054b60e-48b5-45b8-bdcd-37f90a723b30
+
+Ok.
+
+3 rows in set. Elapsed: 0.019 sec.
+
+############################################################ end 3 ########################################################
+############################################################ 4 ########################################################
+написать SELECT, возвращающий:
+email при помощи dictGet,
+аккамулятивную сумму expense, c окном по action
+сортировка по email
+
+SELECT
+    *,
+    dictGet('dict_1', 'email', user_id) AS email
+FROM tbl_1
+
+Query id: 8f364c0b-c285-4ac0-b5c8-cd048eedd0b6
+
+   ┌─user_id─┬─action─┬─expense─┬─email──────────┐
+1. │       1 │ foo    │      34 │ foo@bar        │
+2. │       2 │ bar    │      23 │ wife@jizni.net │
+3. │       3 │ foobar │      65 │                │
+4. │       4 │ barfoo │      44 │                │
+5. │       5 │ ...    │      78 │                │
+   └─────────┴────────┴─────────┴────────────────┘
+
+5 rows in set. Elapsed: 0.024 sec.
+
+
+SELECT
+    *,
+    sum(expense) OVER (ORDER BY user_id ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS cumm
+FROM tbl_1
+ORDER BY user_id ASC
+
+Query id: d17db0f8-44d8-4c53-a091-bbcd9984a4cf
+
+   ┌─user_id─┬─action─┬─expense─┬─cumm─┐
+1. │       1 │ foo    │      34 │   34 │
+2. │       2 │ bar    │      23 │   57 │
+3. │       3 │ foobar │      65 │  122 │
+4. │       4 │ barfoo │      44 │  166 │
+5. │       5 │ ...    │      78 │  244 │
+   └─────────┴────────┴─────────┴──────┘
+
+WITH cte AS
+    (
+        SELECT
+            *,
+            dictGet('dict_1', 'email', user_id) AS email
+        FROM tbl_1
+    )
+SELECT *
+FROM cte
+ORDER BY email DESC
+
+Query id: 9b84ffb1-2091-44eb-9c43-0476a007cccc
+
+   ┌─user_id─┬─action─┬─expense─┬─email──────────┐
+1. │       2 │ bar    │      23 │ wife@jizni.net │
+2. │       1 │ foo    │      34 │ foo@bar        │
+3. │       3 │ foobar │      65 │                │
+4. │       4 │ barfoo │      44 │                │
+5. │       5 │ ...    │      78 │                │
+   └─────────┴────────┴─────────┴────────────────┘
+
+5 rows in set. Elapsed: 0.007 sec.
+
+
+############################################################ 4 ########################################################
