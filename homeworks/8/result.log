@@ -1,0 +1,215 @@
+############################################################ 1 ########################################################
+CREATE DATABASE homework_8
+
+Query id: eda1112d-c488-4c46-889e-62e778ce7313
+
+Ok.
+
+0 rows in set. Elapsed: 0.011 sec.
+
+
+USE homework_8
+
+Query id: 619d27aa-7b3b-4697-839e-472cc9722b57
+
+Ok.
+
+0 rows in set. Elapsed: 0.002 sec.
+
+
+CREATE TABLE t1
+(
+    `Id` UInt32,
+    `Text` String
+)
+ENGINE = MergeTree
+ORDER BY Id
+
+Query id: da93b623-96e0-49ae-a89a-5d98dfe336e9
+
+Ok.
+
+0 rows in set. Elapsed: 0.012 sec.
+
+
+
+CREATE TABLE t1_mv
+(
+    `Id` UInt32,
+    `Text` String
+)
+ENGINE = MergeTree
+ORDER BY Id
+
+Query id: d4303451-6bd8-4fb2-84a6-41ae46cb747f
+
+Ok.
+
+0 rows in set. Elapsed: 0.017 sec.
+
+
+CREATE MATERIALIZED VIEW t1_to_t1_mv TO t1_mv
+AS SELECT
+    Id,
+    Text
+FROM t1
+WHERE Id IN (1, 2, 3)
+
+Query id: 246ed9d4-b286-4397-adb0-47a2120e58c9
+
+Ok.
+
+0 rows in set. Elapsed: 0.009 sec.
+
+
+insert into t1 values (1, 't1'), (2, 't2'), (3, 't3'), (4, 't4'), (5, 't5')
+
+INSERT INTO t1 FORMAT Values
+
+Query id: 45ca6ef1-71ac-48de-8c66-82d603c53c0a
+
+Ok.
+
+5 rows in set. Elapsed: 0.020 sec.
+
+
+
+
+SELECT *
+FROM t1_mv
+
+Query id: 4b468c99-8861-4586-a2fd-5f2cabea6cea
+
+   ┌─Id─┬─Text─┐
+1. │  1 │ t1   │
+2. │  2 │ t2   │
+3. │  3 │ t3   │
+   └────┴──────┘
+
+3 rows in set. Elapsed: 0.016 sec.
+
+d979b380b3e7 :) select * from t1;
+
+SELECT *
+FROM t1
+
+Query id: cdd64ce5-1601-4d84-906c-bdd3bdc888ab
+
+   ┌─Id─┬─Text─┐
+1. │  1 │ t1   │
+2. │  2 │ t2   │
+3. │  3 │ t3   │
+4. │  4 │ t4   │
+5. │  5 │ t5   │
+   └────┴──────┘
+
+5 rows in set. Elapsed: 0.011 sec.
+
+############################################################ end 1 ########################################################
+############################################################ 2 ########################################################
+
+CREATE TABLE t2
+(
+    `Id` UInt32,
+    `Text` String
+)
+ENGINE = MergeTree
+ORDER BY Id
+
+Query id: 00e21ac3-e406-4dfc-9e90-7d9f2c1b6d1f
+
+Ok.
+
+0 rows in set. Elapsed: 0.024 sec.
+
+
+ALTER TABLE t2
+    (ADD PROJECTION t2_projection
+    (
+        SELECT
+            max(Id)
+        group BY Id
+    ))
+
+Query id: 9a35e514-ba2b-4977-a4be-fd0026558454
+
+Ok.
+
+0 rows in set. Elapsed: 0.017 sec.
+
+
+ALTER TABLE t2
+    (MATERIALIZE PROJECTION t2_projection)
+
+Query id: 8a2642d8-9dc4-4bb0-9c05-8a06f18cfe97
+
+Ok.
+
+0 rows in set. Elapsed: 0.004 sec.
+
+SET optimize_use_projections = 1
+
+Query id: 3aae2a70-5979-45ca-91a4-a26f34b6dbc6
+
+Ok.
+
+0 rows in set. Elapsed: 0.004 sec.
+
+
+insert into t2 values (1, 't1'), (2, 't2'), (3, 't3'), (4, 't4'), (5, 't5');
+
+INSERT INTO t2 FORMAT Values
+
+Query id: b22882df-edff-4ce6-b040-9f9e9ee7d937
+
+Ok.
+
+5 rows in set. Elapsed: 0.022 sec.
+
+
+SET send_logs_level = 'trace'
+
+Query id: 507f8a29-6781-4444-8952-f96164af2a80
+
+Ok.
+
+0 rows in set. Elapsed: 0.006 sec.
+
+-- !!!! Использование проекции можно, например, увидеть через send_logs_level=trace
+-- %Reading 1 ranges in order from part t2_projection, approx. 5 rows starting from 0%
+
+SELECT max(Id)
+FROM t2
+
+Query id: 68a025c1-07e6-4e36-bc2a-afb9b67178da
+
+[d979b380b3e7] 2024.11.18 12:31:42.826567 [ 68 ] {68a025c1-07e6-4e36-bc2a-afb9b67178da} <Debug> executeQuery: (from 127.0.0.1:58434) SELECT max(Id) from t2 group BY Id (stage: Complete)
+[d979b380b3e7] 2024.11.18 12:31:42.830782 [ 68 ] {68a025c1-07e6-4e36-bc2a-afb9b67178da} <Trace> Planner: Query to stage Complete
+[d979b380b3e7] 2024.11.18 12:31:42.831395 [ 68 ] {68a025c1-07e6-4e36-bc2a-afb9b67178da} <Trace> Planner: Query from stage FetchColumns to stage Complete
+[d979b380b3e7] 2024.11.18 12:31:42.834980 [ 68 ] {68a025c1-07e6-4e36-bc2a-afb9b67178da} <Debug> homework_8.t2 (ca202a0e-62d8-4159-82a5-f0287e9df5e7) (SelectExecutor): Key condition: unknown
+[d979b380b3e7] 2024.11.18 12:31:42.835185 [ 68 ] {68a025c1-07e6-4e36-bc2a-afb9b67178da} <Trace> homework_8.t2 (ca202a0e-62d8-4159-82a5-f0287e9df5e7) (SelectExecutor): Filtering marks by primary and secondary keys
+[d979b380b3e7] 2024.11.18 12:31:42.835642 [ 68 ] {68a025c1-07e6-4e36-bc2a-afb9b67178da} <Debug> homework_8.t2 (ca202a0e-62d8-4159-82a5-f0287e9df5e7) (SelectExecutor): Key condition: unknown
+[d979b380b3e7] 2024.11.18 12:31:42.835723 [ 68 ] {68a025c1-07e6-4e36-bc2a-afb9b67178da} <Trace> homework_8.t2 (ca202a0e-62d8-4159-82a5-f0287e9df5e7) (SelectExecutor): Filtering marks by primary and secondary keys
+[d979b380b3e7] 2024.11.18 12:31:42.836260 [ 68 ] {68a025c1-07e6-4e36-bc2a-afb9b67178da} <Debug> homework_8.t2 (ca202a0e-62d8-4159-82a5-f0287e9df5e7) (SelectExecutor): Selected 1/1 parts by partition key, 1 parts by primary key, 1/1 marks by primary key, 1 marks to read from 1 ranges
+[d979b380b3e7] 2024.11.18 12:31:42.836342 [ 68 ] {68a025c1-07e6-4e36-bc2a-afb9b67178da} <Trace> homework_8.t2 (ca202a0e-62d8-4159-82a5-f0287e9df5e7) (SelectExecutor): Spreading mark ranges among streams (default reading)
+[d979b380b3e7] 2024.11.18 12:31:42.836612 [ 68 ] {68a025c1-07e6-4e36-bc2a-afb9b67178da} <Trace> homework_8.t2 (ca202a0e-62d8-4159-82a5-f0287e9df5e7) (SelectExecutor): Reading 1 ranges in order from part t2_projection, approx. 5 rows starting from 0
+[d979b380b3e7] 2024.11.18 12:31:42.839361 [ 775 ] {68a025c1-07e6-4e36-bc2a-afb9b67178da} <Trace> AggregatingTransform: Aggregating
+[d979b380b3e7] 2024.11.18 12:31:42.839529 [ 775 ] {68a025c1-07e6-4e36-bc2a-afb9b67178da} <Trace> Aggregator: Aggregation method: key32
+[d979b380b3e7] 2024.11.18 12:31:42.840223 [ 775 ] {68a025c1-07e6-4e36-bc2a-afb9b67178da} <Trace> AggregatingTransform: Aggregated. 5 to 5 rows (from 20.00 B) in 0.003196125 sec. (1564.394 rows/sec., 6.11 KiB/sec.)
+[d979b380b3e7] 2024.11.18 12:31:42.840283 [ 775 ] {68a025c1-07e6-4e36-bc2a-afb9b67178da} <Trace> Aggregator: Merging aggregated data
+[d979b380b3e7] 2024.11.18 12:31:42.840841 [ 775 ] {68a025c1-07e6-4e36-bc2a-afb9b67178da} <Trace> HashTablesStatistics: Statistics updated for key=17151866363326974347: new sum_of_sizes=5, median_size=5
+   ┌─max(Id)─┐
+1. │       4 │
+2. │       3 │
+3. │       2 │
+4. │       5 │
+5. │       1 │
+   └─────────┘
+[d979b380b3e7] 2024.11.18 12:31:42.842081 [ 68 ] {68a025c1-07e6-4e36-bc2a-afb9b67178da} <Debug> executeQuery: Read 5 rows, 20.00 B in 0.015963 sec., 313.22433126605273 rows/sec., 1.22 KiB/sec.
+[d979b380b3e7] 2024.11.18 12:31:42.842262 [ 68 ] {68a025c1-07e6-4e36-bc2a-afb9b67178da} <Debug> MemoryTracker: Peak memory usage (for query): 214.01 KiB.
+[d979b380b3e7] 2024.11.18 12:31:42.842389 [ 68 ] {68a025c1-07e6-4e36-bc2a-afb9b67178da} <Debug> TCPHandler: Processed in 0.018607875 sec.
+
+5 rows in set. Elapsed: 0.018 sec.
+
+
+############################################################ end 2 ########################################################
