@@ -1,0 +1,218 @@
+CREATE DATABASE h9 ON CLUSTER replicated_cluster
+
+Query id: 13d41603-c29a-4475-a2f8-f97b56a0d23d
+
+   ┌─host────────┬─port─┬─status─┬─error─┬─num_hosts_remaining─┬─num_hosts_active─┐
+1. │ clickhouse2 │ 9000 │      0 │       │                   2 │                0 │
+2. │ clickhouse1 │ 9000 │      0 │       │                   1 │                0 │
+3. │ clickhouse3 │ 9000 │      0 │       │                   0 │                0 │
+   └─────────────┴──────┴────────┴───────┴─────────────────────┴──────────────────┘
+
+3 rows in set. Elapsed: 0.172 sec.
+
+
+SHOW DATABASES
+
+Query id: 41132966-8269-4b9b-b263-424477458359
+
+   ┌─name───────────────┐
+1. │ INFORMATION_SCHEMA │
+2. │ default            │
+3. │ h9                 │
+4. │ information_schema │
+5. │ system             │
+   └────────────────────┘
+
+5 rows in set. Elapsed: 0.005 sec.
+
+
+USE h9
+
+Query id: e6bff3f4-9a53-4f17-aab1-60c41032d6ff
+
+Ok.
+
+
+CREATE TABLE trips
+(
+    `trip_id` UInt32,
+    `pickup_datetime` DateTime,
+    `dropoff_datetime` DateTime,
+    `pickup_longitude` Nullable(Float64),
+    `pickup_latitude` Nullable(Float64),
+    `dropoff_longitude` Nullable(Float64),
+    `dropoff_latitude` Nullable(Float64),
+    `passenger_count` UInt8,
+    `trip_distance` Float32,
+    `fare_amount` Float32,
+    `extra` Float32,
+    `tip_amount` Float32,
+    `tolls_amount` Float32,
+    `total_amount` Float32,
+    `payment_type` Enum('CSH' = 1, 'CRE' = 2, 'NOC' = 3, 'DIS' = 4, 'UNK' = 5),
+    `pickup_ntaname` LowCardinality(String),
+    `dropoff_ntaname` LowCardinality(String)
+)
+ENGINE = MergeTree
+PRIMARY KEY (pickup_datetime, dropoff_datetime)
+
+Query id: 4242bbc6-8897-450d-a116-ab7961e7c66d
+
+Ok.
+
+0 rows in set. Elapsed: 0.046 sec.
+
+INSERT INTO trips SELECT
+    trip_id,
+    pickup_datetime,
+    dropoff_datetime,
+    pickup_longitude,
+    pickup_latitude,
+    dropoff_longitude,
+    dropoff_latitude,
+    passenger_count,
+    trip_distance,
+    fare_amount,
+    extra,
+    tip_amount,
+    tolls_amount,
+    total_amount,
+    payment_type,
+    pickup_ntaname,
+    dropoff_ntaname
+FROM s3('https://datasets-documentation.s3.eu-west-3.amazonaws.com/nyc-taxi/trips_{0..2}.gz', 'TabSeparatedWithNames')
+
+Query id: 49c0bbf3-6fee-45d9-a046-5e9a0d74a755
+
+Ok.
+
+0 rows in set. Elapsed: 34.527 sec. Processed 3.00 million rows, 244.69 MB (86.90 thousand rows/s., 7.09 MB/s.)
+Peak memory usage: 300.76 MiB.
+
+
+SELECT count()
+FROM trips
+
+Query id: ff7f3bae-69ca-41a8-90a2-a69fdc87a086
+
+   ┌─count()─┐
+1. │ 3000317 │ -- 3.00 million
+   └─────────┘
+
+1 row in set. Elapsed: 0.012 sec.
+
+
+CREATE TABLE h9.trips_rep ON CLUSTER replicated_cluster AS h9.trips
+ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/{table}/{uuid}/{shard}', '{replica}')
+PRIMARY KEY (pickup_datetime, dropoff_datetime)
+
+Query id: 6df79190-826c-47f0-9c3b-5da82483026c
+
+   ┌─host────────┬─port─┬─status─┬─error─┬─num_hosts_remaining─┬─num_hosts_active─┐
+1. │ clickhouse2 │ 9000 │      0 │       │                   2 │                0 │
+2. │ clickhouse1 │ 9000 │      0 │       │                   1 │                0 │
+3. │ clickhouse3 │ 9000 │      0 │       │                   0 │                0 │
+   └─────────────┴──────┴────────┴───────┴─────────────────────┴──────────────────┘
+
+3 rows in set. Elapsed: 0.206 sec.
+
+
+INSERT INTO h9.trips_rep SELECT *
+FROM h9.trips
+
+Query id: 0d25217a-28d9-4704-a4ca-487d975c2dca
+
+Ok.
+
+0 rows in set. Elapsed: 2.536 sec. Processed 3.00 million rows, 217.99 MB (1.18 million rows/s., 85.98 MB/s.)
+Peak memory usage: 235.87 MiB.
+
+
+SELECT
+    getMacro('replica'),
+    database,
+    name,
+    engine,
+    total_rows,
+    round((total_bytes / 1024) / 1024, 3) AS total_Mbytes
+FROM remote('clickhouse1,clickhouse2,clickhouse3', system.tables)
+WHERE database = 'h9'
+
+Query id: 07960e57-3f14-4e03-bc73-8289bd994804
+
+   ┌─getMacro('replica')─┬─database─┬─name──────┬─engine──────────────┬─total_rows─┬─total_Mbytes─┐
+1. │ replica-1           │ h9       │ trips     │ MergeTree           │    3000317 │      120.788 │
+2. │ replica-1           │ h9       │ trips_rep │ ReplicatedMergeTree │    3000317 │      119.733 │
+   └─────────────────────┴──────────┴───────────┴─────────────────────┴────────────┴──────────────┘
+   ┌─getMacro('replica')─┬─database─┬─name──────┬─engine──────────────┬─total_rows─┬─total_Mbytes─┐
+3. │ replica-3           │ h9       │ trips_rep │ ReplicatedMergeTree │    3000317 │      119.733 │
+   └─────────────────────┴──────────┴───────────┴─────────────────────┴────────────┴──────────────┘
+   ┌─getMacro('replica')─┬─database─┬─name──────┬─engine──────────────┬─total_rows─┬─total_Mbytes─┐
+4. │ replica-2           │ h9       │ trips_rep │ ReplicatedMergeTree │    3000317 │      119.733 │
+   └─────────────────────┴──────────┴───────────┴─────────────────────┴────────────┴──────────────┘
+
+4 rows in set. Elapsed: 0.040 sec.
+
+
+clickhouse-client --query "SELECT getMacro('replica'), * FROM remote('clickhouse1,clickhouse2,clickhouse3', system.parts) FORMAT JSONEachRow" --format FormatName > file1.json
+clickhouse-client --query "SELECT * FROM system.replicas FORMAT JSONEachRow" --format FormatName > file2.json
+
+
+SELECT
+    min(pickup_datetime),
+    max(pickup_datetime)
+FROM h9.trips_rep
+
+Query id: b84cde3f-4222-4050-a584-bc1537134294
+
+   ┌─min(pickup_datetime)─┬─max(pickup_datetime)─┐
+1. │  2015-07-01 00:00:09 │  2015-09-30 23:59:58 │
+   └──────────────────────┴──────────────────────┘
+
+1 row in set. Elapsed: 0.008 sec.
+
+ALTER TABLE h9.trips_rep ON CLUSTER replicated_cluster MODIFY TTL pickup_datetime + interval 7 day
+
+Query id: 18121822-4947-469c-9ba6-af27d70ba527
+
+   ┌─host────────┬─port─┬─status─┬─error─┬─num_hosts_remaining─┬─num_hosts_active─┐
+1. │ clickhouse2 │ 9000 │      0 │       │                   2 │                0 │
+2. │ clickhouse1 │ 9000 │      0 │       │                   1 │                0 │
+3. │ clickhouse3 │ 9000 │      0 │       │                   0 │                0 │
+   └─────────────┴──────┴────────┴───────┴─────────────────────┴──────────────────┘
+
+3 rows in set. Elapsed: 1.533 sec.
+
+SHOW CREATE TABLE h9.trips_rep
+
+Query id: b63bc0ad-23b7-4ede-9302-688493755ea7
+
+Row 1:
+──────
+statement: CREATE TABLE h9.trips_rep
+(
+    `trip_id` UInt32,
+    `pickup_datetime` DateTime,
+    `dropoff_datetime` DateTime,
+    `pickup_longitude` Nullable(Float64),
+    `pickup_latitude` Nullable(Float64),
+    `dropoff_longitude` Nullable(Float64),
+    `dropoff_latitude` Nullable(Float64),
+    `passenger_count` UInt8,
+    `trip_distance` Float32,
+    `fare_amount` Float32,
+    `extra` Float32,
+    `tip_amount` Float32,
+    `tolls_amount` Float32,
+    `total_amount` Float32,
+    `payment_type` Enum8('CSH' = 1, 'CRE' = 2, 'NOC' = 3, 'DIS' = 4, 'UNK' = 5),
+    `pickup_ntaname` LowCardinality(String),
+    `dropoff_ntaname` LowCardinality(String)
+)
+ENGINE = ReplicatedMergeTree('/clickhouse/tables/h9/trips_rep/{uuid}/{shard}', '{replica}')
+PRIMARY KEY (pickup_datetime, dropoff_datetime)
+ORDER BY (pickup_datetime, dropoff_datetime)
+TTL pickup_datetime + toIntervalDay(7)
+SETTINGS index_granularity = 8192
+
+1 row in set. Elapsed: 0.006 sec.
