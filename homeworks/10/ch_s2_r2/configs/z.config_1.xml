@@ -1,0 +1,37 @@
+<clickhouse>
+    <remote_servers>
+        <sharded_cluster>
+            <shard>
+                <internal_replication>true</internal_replication>
+                <replica>
+                    <host>clickhouse1</host>
+                    <port>9000</port>
+                </replica>
+                <replica>
+                    <host>clickhouse2</host>
+                    <port>9000</port>
+                </replica>
+            </shard>
+            <shard>
+                <replica>
+                    <host>clickhouse3</host>
+                    <port>9000</port>
+                </replica>
+                <replica>
+                    <host>clickhouse4</host>
+                    <port>9000</port>
+                </replica>
+            </shard>
+        </sharded_cluster>
+    </remote_servers>
+    <zookeeper>
+      <node index="1">
+        <host>zookeeper</host>
+        <port>2181</port>
+      </node>
+    </zookeeper>
+    <macros>
+        <shard>shard-1</shard>
+        <replica>replica-1</replica>
+    </macros>
+</clickhouse>

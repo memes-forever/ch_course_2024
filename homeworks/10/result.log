@@ -1,0 +1,144 @@
+CREATE DATABASE h10 ON CLUSTER sharded_cluster
+
+Query id: 04bfa4a3-6097-4c61-ae79-974779e101ac
+
+   ┌─host────────┬─port─┬─status─┬─error─┬─num_hosts_remaining─┬─num_hosts_active─┐
+1. │ clickhouse2 │ 9000 │      0 │       │                   3 │                0 │
+2. │ clickhouse3 │ 9000 │      0 │       │                   2 │                0 │
+3. │ clickhouse1 │ 9000 │      0 │       │                   1 │                0 │
+4. │ clickhouse4 │ 9000 │      0 │       │                   0 │                0 │
+   └─────────────┴──────┴────────┴───────┴─────────────────────┴──────────────────┘
+
+4 rows in set. Elapsed: 0.134 sec.
+
+
+USE h10
+
+Query id: 2a63d238-5a45-4da3-8f62-61a42bb8da8e
+
+Ok.
+
+0 rows in set. Elapsed: 0.008 sec.
+
+CREATE TABLE h10.test_rep ON CLUSTER sharded_cluster
+(
+    `id` UInt32,
+    `description` String
+)
+ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/{table}/{uuid}/{shard}', '{replica}')
+ORDER BY id
+SETTINGS index_granularity = 8192
+
+Query id: 470c7dce-55cd-443a-852b-b3972b05a71e
+
+   ┌─host────────┬─port─┬─status─┬─error─┬─num_hosts_remaining─┬─num_hosts_active─┐
+1. │ clickhouse2 │ 9000 │      0 │       │                   3 │                0 │
+2. │ clickhouse3 │ 9000 │      0 │       │                   2 │                0 │
+3. │ clickhouse1 │ 9000 │      0 │       │                   1 │                0 │
+4. │ clickhouse4 │ 9000 │      0 │       │                   0 │                0 │
+   └─────────────┴──────┴────────┴───────┴─────────────────────┴──────────────────┘
+
+4 rows in set. Elapsed: 0.378 sec.
+
+CREATE TABLE h10.test_dist ON CLUSTER sharded_cluster AS h10.test_rep
+ENGINE = Distributed('sharded_cluster', 'h10', 'test_rep', id)
+
+Query id: d8561539-2524-4b3b-835a-0279b1d321cc
+
+   ┌─host────────┬─port─┬─status─┬─error─┬─num_hosts_remaining─┬─num_hosts_active─┐
+1. │ clickhouse2 │ 9000 │      0 │       │                   3 │                0 │
+2. │ clickhouse1 │ 9000 │      0 │       │                   2 │                0 │
+3. │ clickhouse3 │ 9000 │      0 │       │                   1 │                0 │
+4. │ clickhouse4 │ 9000 │      0 │       │                   0 │                0 │
+   └─────────────┴──────┴────────┴───────┴─────────────────────┴──────────────────┘
+
+4 rows in set. Elapsed: 0.108 sec.
+
+
+insert into h10.test_dist values
+(0, 'test0'),
+(1, 'test1'),
+(2, 'test2'),
+(3, 'test3'),
+(4, 'test4'),
+(5, 'test5')
+
+INSERT INTO h10.test_dist FORMAT Values
+
+Query id: c61d7a25-c7ce-4e0a-bd2a-5a0889eea388
+
+Ok.
+
+6 rows in set. Elapsed: 0.074 sec.
+
+
+SELECT
+    *,
+    hostName(),
+    _shard_num
+FROM h10.test_dist
+
+Query id: 34b1bcd3-373f-4d6c-9a2f-6521effc9b53
+
+   ┌─id─┬─description─┬─hostName()───┬─_shard_num─┐
+1. │  0 │ test0       │ dea995e92bc7 │          1 │
+2. │  2 │ test2       │ dea995e92bc7 │          1 │
+3. │  4 │ test4       │ dea995e92bc7 │          1 │
+   └────┴─────────────┴──────────────┴────────────┘
+   ┌─id─┬─description─┬─hostName()───┬─_shard_num─┐
+4. │  1 │ test1       │ c039c14964d2 │          2 │
+5. │  3 │ test3       │ c039c14964d2 │          2 │
+6. │  5 │ test5       │ c039c14964d2 │          2 │
+   └────┴─────────────┴──────────────┴────────────┘
+
+6 rows in set. Elapsed: 0.026 sec.
+
+
+SELECT *
+FROM system.clusters
+
+Query id: 5c0193df-305e-4794-8e1f-4324c3399acb
+
+   ┌─cluster─────────┬─shard_num─┬─shard_weight─┬─internal_replication─┬─replica_num─┬─host_name───┬─host_address─┬─port─┬─is_local─┬─user────┬─default_database─┬─errors_count─┬─slowdowns_count─┬─estimated_recovery_time─┬─database_shard_name─┬─database_replica_name─┬─is_active─┬─replication_lag─┬─recovery_time─┐
+1. │ default         │         1 │            1 │                    0 │           1 │ localhost   │ 127.0.0.1    │ 9000 │        1 │ default │                  │            0 │               0 │                       0 │                     │                       │      ᴺᵁᴸᴸ │            ᴺᵁᴸᴸ │          ᴺᵁᴸᴸ │
+2. │ sharded_cluster │         1 │            1 │                    1 │           1 │ clickhouse1 │ 172.24.0.6   │ 9000 │        1 │ default │                  │            0 │               0 │                       0 │                     │                       │      ᴺᵁᴸᴸ │            ᴺᵁᴸᴸ │          ᴺᵁᴸᴸ │
+3. │ sharded_cluster │         1 │            1 │                    1 │           2 │ clickhouse2 │ 172.24.0.5   │ 9000 │        0 │ default │                  │            0 │               0 │                       0 │                     │                       │      ᴺᵁᴸᴸ │            ᴺᵁᴸᴸ │          ᴺᵁᴸᴸ │
+4. │ sharded_cluster │         2 │            1 │                    0 │           1 │ clickhouse3 │ 172.24.0.3   │ 9000 │        0 │ default │                  │            0 │               0 │                       0 │                     │                       │      ᴺᵁᴸᴸ │            ᴺᵁᴸᴸ │          ᴺᵁᴸᴸ │
+5. │ sharded_cluster │         2 │            1 │                    0 │           2 │ clickhouse4 │ 172.24.0.4   │ 9000 │        0 │ default │                  │            0 │               0 │                       0 │                     │                       │      ᴺᵁᴸᴸ │            ᴺᵁᴸᴸ │          ᴺᵁᴸᴸ │
+   └─────────────────┴───────────┴──────────────┴──────────────────────┴─────────────┴─────────────┴──────────────┴──────┴──────────┴─────────┴──────────────────┴──────────────┴─────────────────┴─────────────────────────┴─────────────────────┴───────────────────────┴───────────┴─────────────────┴───────────────┘
+
+5 rows in set. Elapsed: 0.009 sec.
+
+
+SELECT
+    getMacro('replica'),
+    getMacro('shard'),
+    database,
+    name,
+    engine,
+    total_rows,
+    round((total_bytes / 1024) / 1024, 3) AS total_Mbytes,
+    create_table_query
+FROM remote('clickhouse1,clickhouse2,clickhouse3,clickhouse4', system.tables)
+WHERE database = 'h10'
+
+Query id: 7de6ad84-d175-49b1-bed9-d0c7c9b3aea6
+
+   ┌─getMacro('replica')─┬─getMacro('shard')─┬─database─┬─name──────┬─engine──────────────┬─total_rows─┬─total_Mbytes─┬─create_table_query──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+1. │ replica-1           │ shard-1           │ h10      │ test_dist │ Distributed         │       ᴺᵁᴸᴸ │            0 │ CREATE TABLE h10.test_dist (`id` UInt32, `description` String) ENGINE = Distributed('sharded_cluster', 'h10', 'test_rep', id)                                                                           │
+2. │ replica-1           │ shard-1           │ h10      │ test_rep  │ ReplicatedMergeTree │          3 │            0 │ CREATE TABLE h10.test_rep (`id` UInt32, `description` String) ENGINE = ReplicatedMergeTree('/clickhouse/tables/h10/test_rep/{uuid}/{shard}', '{replica}') ORDER BY id SETTINGS index_granularity = 8192 │
+   └─────────────────────┴───────────────────┴──────────┴───────────┴─────────────────────┴────────────┴──────────────┴─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+   ┌─getMacro('replica')─┬─getMacro('shard')─┬─database─┬─name──────┬─engine──────────────┬─total_rows─┬─total_Mbytes─┬─create_table_query──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+3. │ replica-2           │ shard-1           │ h10      │ test_dist │ Distributed         │       ᴺᵁᴸᴸ │            0 │ CREATE TABLE h10.test_dist (`id` UInt32, `description` String) ENGINE = Distributed('sharded_cluster', 'h10', 'test_rep', id)                                                                           │
+4. │ replica-2           │ shard-1           │ h10      │ test_rep  │ ReplicatedMergeTree │          3 │            0 │ CREATE TABLE h10.test_rep (`id` UInt32, `description` String) ENGINE = ReplicatedMergeTree('/clickhouse/tables/h10/test_rep/{uuid}/{shard}', '{replica}') ORDER BY id SETTINGS index_granularity = 8192 │
+   └─────────────────────┴───────────────────┴──────────┴───────────┴─────────────────────┴────────────┴──────────────┴─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+   ┌─getMacro('replica')─┬─getMacro('shard')─┬─database─┬─name──────┬─engine──────────────┬─total_rows─┬─total_Mbytes─┬─create_table_query──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+5. │ replica-1           │ shard-2           │ h10      │ test_dist │ Distributed         │       ᴺᵁᴸᴸ │            0 │ CREATE TABLE h10.test_dist (`id` UInt32, `description` String) ENGINE = Distributed('sharded_cluster', 'h10', 'test_rep', id)                                                                           │
+6. │ replica-1           │ shard-2           │ h10      │ test_rep  │ ReplicatedMergeTree │          3 │            0 │ CREATE TABLE h10.test_rep (`id` UInt32, `description` String) ENGINE = ReplicatedMergeTree('/clickhouse/tables/h10/test_rep/{uuid}/{shard}', '{replica}') ORDER BY id SETTINGS index_granularity = 8192 │
+   └─────────────────────┴───────────────────┴──────────┴───────────┴─────────────────────┴────────────┴──────────────┴─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+   ┌─getMacro('replica')─┬─getMacro('shard')─┬─database─┬─name──────┬─engine──────────────┬─total_rows─┬─total_Mbytes─┬─create_table_query──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+7. │ replica-2           │ shard-2           │ h10      │ test_dist │ Distributed         │       ᴺᵁᴸᴸ │            0 │ CREATE TABLE h10.test_dist (`id` UInt32, `description` String) ENGINE = Distributed('sharded_cluster', 'h10', 'test_rep', id)                                                                           │
+8. │ replica-2           │ shard-2           │ h10      │ test_rep  │ ReplicatedMergeTree │          3 │            0 │ CREATE TABLE h10.test_rep (`id` UInt32, `description` String) ENGINE = ReplicatedMergeTree('/clickhouse/tables/h10/test_rep/{uuid}/{shard}', '{replica}') ORDER BY id SETTINGS index_granularity = 8192 │
+   └─────────────────────┴───────────────────┴──────────┴───────────┴─────────────────────┴────────────┴──────────────┴─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+8 rows in set. Elapsed: 0.035 sec.
