@@ -1,0 +1,219 @@
+############################################################ 0 ########################################################
+CREATE DATABASE h11
+
+Query id: be0530a6-0062-4fdf-8170-fbe2d2cdc9b6
+
+Ok.
+
+0 rows in set. Elapsed: 0.010 sec.
+
+USE h11
+
+Query id: a520ea02-244e-4cfa-b9ef-9a9333fed049
+
+Ok.
+
+0 rows in set. Elapsed: 0.009 sec.
+
+############################################################ end 0 ########################################################
+############################################################ 1 ########################################################
+
+CREATE TABLE t1
+(
+    `user_id` UInt32,
+    `activity_type` String,
+    `activity_date` DateTime
+)
+ENGINE = MergeTree
+PARTITION BY toYYYYMM(activity_date)
+ORDER BY user_id
+
+Query id: 3d87b2b3-d432-4272-a2d1-9deb4c9e0c75
+
+Ok.
+
+0 rows in set. Elapsed: 0.019 sec.
+
+############################################################ end 1 ########################################################
+############################################################ 2 ########################################################
+
+ insert into t1 values
+(0, 'login', '2024-01-01'),
+(1, 'logout', '2024-02-02'),
+(2, 'purchase', '2024-03-03'),
+(3, 'login', '2024-04-04'),
+(4, 'logout', '2024-05-01'),
+(5, 'purchase', '2024-06-01')
+
+INSERT INTO t1 FORMAT Values
+
+Query id: abf454c5-802d-49f7-9e55-fb5633642aec
+
+Ok.
+
+6 rows in set. Elapsed: 0.037 sec.
+
+SELECT *
+FROM t1
+
+Query id: 6fc29486-7290-4898-8165-b2bee317a2d4
+
+   ┌─user_id─┬─activity_type─┬───────activity_date─┐
+1. │       5 │ purchase      │ 2024-06-01 00:00:00 │
+   └─────────┴───────────────┴─────────────────────┘
+   ┌─user_id─┬─activity_type─┬───────activity_date─┐
+2. │       0 │ login         │ 2024-01-01 00:00:00 │
+   └─────────┴───────────────┴─────────────────────┘
+   ┌─user_id─┬─activity_type─┬───────activity_date─┐
+3. │       3 │ login         │ 2024-04-04 00:00:00 │
+   └─────────┴───────────────┴─────────────────────┘
+   ┌─user_id─┬─activity_type─┬───────activity_date─┐
+4. │       1 │ logout        │ 2024-02-02 00:00:00 │
+   └─────────┴───────────────┴─────────────────────┘
+   ┌─user_id─┬─activity_type─┬───────activity_date─┐
+5. │       2 │ purchase      │ 2024-03-03 00:00:00 │
+   └─────────┴───────────────┴─────────────────────┘
+   ┌─user_id─┬─activity_type─┬───────activity_date─┐
+6. │       4 │ logout        │ 2024-05-01 00:00:00 │
+   └─────────┴───────────────┴─────────────────────┘
+
+6 rows in set. Elapsed: 0.080 sec.
+
+############################################################ end 2 ########################################################
+############################################################ 3 ########################################################
+
+ALTER TABLE t1
+    (UPDATE activity_type = 'error' WHERE user_id = 0)
+
+Query id: 869df59a-a714-408d-afeb-b5c323cc42ec
+
+Ok.
+
+0 rows in set. Elapsed: 0.042 sec.
+
+############################################################ end 3 ########################################################
+############################################################ 4 ########################################################
+
+SELECT *
+FROM t1
+WHERE user_id = 0
+
+Query id: f7c8e0fd-ee23-45d9-b6ed-fde0eb73d290
+
+   ┌─user_id─┬─activity_type─┬───────activity_date─┐
+1. │       0 │ error         │ 2024-01-01 00:00:00 │
+   └─────────┴───────────────┴─────────────────────┘
+
+1 row in set. Elapsed: 0.024 sec.
+
+SELECT *
+FROM system.mutations
+WHERE database = 'h11'
+
+Query id: baee6716-6b39-451d-b412-7fe475d34500
+
+Row 1:
+──────
+database:                   h11
+table:                      t1
+mutation_id:                mutation_7.txt
+command:                    UPDATE activity_type = 'error' WHERE user_id = 0
+create_time:                2024-11-29 06:25:12
+block_numbers.partition_id: ['']
+block_numbers.number:       [7]
+parts_to_do_names:          []
+parts_to_do:                0
+is_done:                    1
+is_killed:                  0
+latest_failed_part:
+latest_fail_time:           1970-01-01 00:00:00
+latest_fail_reason:
+
+1 row in set. Elapsed: 0.009 sec.
+
+############################################################ end 4 ########################################################
+############################################################ 5 ########################################################
+
+5. **Манипуляции с партициями:**
+   * Удалите партицию за определённый месяц.
+
+SELECT toYYYYMM(activity_date)
+FROM t1
+GROUP BY 1
+
+Query id: bbb61f2c-71ce-4bfe-bf41-8afcc531e481
+
+   ┌─toYYYYMM(activity_date)─┐
+1. │                  202401 │
+2. │                  202406 │
+3. │                  202404 │
+4. │                  202403 │
+5. │                  202402 │
+6. │                  202405 │
+   └─────────────────────────┘
+
+6 rows in set. Elapsed: 0.037 sec.
+
+SELECT partition_id
+FROM system.parts
+WHERE (database = 'h11') AND active
+
+Query id: b8cb7652-ef05-4c2b-b0b0-0c0bbacb9cc1
+
+   ┌─partition_id─┐
+1. │ 202401       │
+2. │ 202402       │
+3. │ 202403       │
+4. │ 202404       │
+5. │ 202405       │
+6. │ 202406       │
+   └──────────────┘
+
+6 rows in set. Elapsed: 0.015 sec.
+
+ALTER TABLE t1
+    (DROP PARTITION '202406')
+
+Query id: 632b652d-814a-41f4-be5b-bd2af6027c1d
+
+Ok.
+
+0 rows in set. Elapsed: 0.029 sec.
+
+############################################################ end 5 ########################################################
+############################################################ 6 ########################################################
+
+SELECT partition_id
+FROM system.parts
+WHERE (database = 'h11') AND active
+
+Query id: d61855d7-6341-4f7f-9bd0-6a39389847e1
+
+   ┌─partition_id─┐
+1. │ 202401       │
+2. │ 202402       │
+3. │ 202403       │
+4. │ 202404       │
+5. │ 202405       │
+   └──────────────┘
+
+5 rows in set. Elapsed: 0.008 sec.
+
+SELECT toYYYYMM(activity_date)
+FROM t1
+GROUP BY 1
+
+Query id: a8285004-80bc-47fc-8ffa-2b96f39618b4
+
+   ┌─toYYYYMM(activity_date)─┐
+1. │                  202401 │
+2. │                  202404 │
+3. │                  202403 │
+4. │                  202402 │
+5. │                  202405 │
+   └─────────────────────────┘
+
+5 rows in set. Elapsed: 0.014 sec.
+
+
+############################################################ end 6 ########################################################
