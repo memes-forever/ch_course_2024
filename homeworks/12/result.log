@@ -1,0 +1,138 @@
+CREATE USER jhon IDENTIFIED WITH plaintext_password BY 'qwerty'
+
+Query id: 1b8dd795-8581-4dfd-b815-b0c55c41be1e
+
+Ok.
+
+0 rows in set. Elapsed: 0.003 sec.
+
+CREATE ROLE devs
+
+Query id: d7e7bb50-9cf5-4840-ae22-1fc4726d2a16
+
+Ok.
+
+0 rows in set. Elapsed: 0.007 sec.
+
+GRANT SELECT ON *.* TO devs
+
+Query id: e23b8b17-4b87-4f6a-b980-8a0f751b1bfc
+
+Ok.
+
+0 rows in set. Elapsed: 0.005 sec.
+
+GRANT devs TO jhon
+
+Query id: 49b5ad79-07f0-4a3c-a961-ed657a5550b2
+
+Ok.
+
+0 rows in set. Elapsed: 0.008 sec.
+
+
+SELECT *
+FROM system.users
+
+Query id: 67fd2bc1-c63b-4f9f-832e-46ccd3485dbe
+
+Row 1:
+──────
+name:                 default
+id:                   94309d50-4f52-5250-31bd-74fecac179db
+storage:              users_xml
+auth_type:            ['plaintext_password']
+auth_params:          ['{}']
+host_ip:              ['::/0']
+host_names:           []
+host_names_regexp:    []
+host_names_like:      []
+default_roles_all:    1
+default_roles_list:   []
+default_roles_except: []
+grantees_any:         1
+grantees_list:        []
+grantees_except:      []
+default_database:
+
+Row 2:
+──────
+name:                 jhon
+id:                   b8466bad-926a-2bfb-9c62-2f21c7e445af
+storage:              local_directory
+auth_type:            ['plaintext_password']
+auth_params:          ['{}']
+host_ip:              ['::/0']
+host_names:           []
+host_names_regexp:    []
+host_names_like:      []
+default_roles_all:    1
+default_roles_list:   []
+default_roles_except: []
+grantees_any:         1
+grantees_list:        []
+grantees_except:      []
+default_database:
+
+2 rows in set. Elapsed: 0.004 sec.
+
+SELECT *
+FROM system.roles
+
+Query id: c32bb13d-67c3-45cf-9cfc-3dbdd9b13146
+
+   ┌─name─┬─id───────────────────────────────────┬─storage─────────┐
+1. │ devs │ f54a6981-ef38-bf1a-0f82-fca27bb4a986 │ local_directory │
+   └──────┴──────────────────────────────────────┴─────────────────┘
+
+1 row in set. Elapsed: 0.003 sec.
+
+SELECT *
+FROM system.role_grants
+
+Query id: 24cf74de-0cc5-473b-a908-e13916d93d41
+
+   ┌─user_name─┬─role_name─┬─granted_role_name─┬─granted_role_id──────────────────────┬─granted_role_is_default─┬─with_admin_option─┐
+1. │ jhon      │ ᴺᵁᴸᴸ      │ devs              │ f54a6981-ef38-bf1a-0f82-fca27bb4a986 │                       1 │                 0 │
+   └───────────┴───────────┴───────────────────┴──────────────────────────────────────┴─────────────────────────┴───────────────────┘
+
+1 row in set. Elapsed: 0.008 sec.
+
+SELECT *
+FROM system.grants
+
+Query id: 7d25b295-2b08-4234-83d6-9ef3cc34ef3d
+
+    ┌─user_name─┬─role_name─┬─access_type───────────────────┬─database─┬─table─┬─column─┬─is_partial_revoke─┬─grant_option─┐
+ 1. │ default   │ ᴺᵁᴸᴸ      │ SHOW                          │ ᴺᵁᴸᴸ     │ ᴺᵁᴸᴸ  │ ᴺᵁᴸᴸ   │                 0 │            1 │
+ 2. │ default   │ ᴺᵁᴸᴸ      │ SELECT                        │ ᴺᵁᴸᴸ     │ ᴺᵁᴸᴸ  │ ᴺᵁᴸᴸ   │                 0 │            1 │
+ 3. │ default   │ ᴺᵁᴸᴸ      │ INSERT                        │ ᴺᵁᴸᴸ     │ ᴺᵁᴸᴸ  │ ᴺᵁᴸᴸ   │                 0 │            1 │
+ 4. │ default   │ ᴺᵁᴸᴸ      │ ALTER                         │ ᴺᵁᴸᴸ     │ ᴺᵁᴸᴸ  │ ᴺᵁᴸᴸ   │                 0 │            1 │
+ 5. │ default   │ ᴺᵁᴸᴸ      │ CREATE                        │ ᴺᵁᴸᴸ     │ ᴺᵁᴸᴸ  │ ᴺᵁᴸᴸ   │                 0 │            1 │
+ 6. │ default   │ ᴺᵁᴸᴸ      │ DROP                          │ ᴺᵁᴸᴸ     │ ᴺᵁᴸᴸ  │ ᴺᵁᴸᴸ   │                 0 │            1 │
+ 7. │ default   │ ᴺᵁᴸᴸ      │ UNDROP TABLE                  │ ᴺᵁᴸᴸ     │ ᴺᵁᴸᴸ  │ ᴺᵁᴸᴸ   │                 0 │            1 │
+ 8. │ default   │ ᴺᵁᴸᴸ      │ TRUNCATE                      │ ᴺᵁᴸᴸ     │ ᴺᵁᴸᴸ  │ ᴺᵁᴸᴸ   │                 0 │            1 │
+ 9. │ default   │ ᴺᵁᴸᴸ      │ OPTIMIZE                      │ ᴺᵁᴸᴸ     │ ᴺᵁᴸᴸ  │ ᴺᵁᴸᴸ   │                 0 │            1 │
+10. │ default   │ ᴺᵁᴸᴸ      │ BACKUP                        │ ᴺᵁᴸᴸ     │ ᴺᵁᴸᴸ  │ ᴺᵁᴸᴸ   │                 0 │            1 │
+11. │ default   │ ᴺᵁᴸᴸ      │ KILL QUERY                    │ ᴺᵁᴸᴸ     │ ᴺᵁᴸᴸ  │ ᴺᵁᴸᴸ   │                 0 │            1 │
+12. │ default   │ ᴺᵁᴸᴸ      │ KILL TRANSACTION              │ ᴺᵁᴸᴸ     │ ᴺᵁᴸᴸ  │ ᴺᵁᴸᴸ   │                 0 │            1 │
+13. │ default   │ ᴺᵁᴸᴸ      │ MOVE PARTITION BETWEEN SHARDS │ ᴺᵁᴸᴸ     │ ᴺᵁᴸᴸ  │ ᴺᵁᴸᴸ   │                 0 │            1 │
+14. │ default   │ ᴺᵁᴸᴸ      │ ACCESS MANAGEMENT             │ ᴺᵁᴸᴸ     │ ᴺᵁᴸᴸ  │ ᴺᵁᴸᴸ   │                 0 │            1 │
+15. │ default   │ ᴺᵁᴸᴸ      │ SYSTEM                        │ ᴺᵁᴸᴸ     │ ᴺᵁᴸᴸ  │ ᴺᵁᴸᴸ   │                 0 │            1 │
+16. │ default   │ ᴺᵁᴸᴸ      │ dictGet                       │ ᴺᵁᴸᴸ     │ ᴺᵁᴸᴸ  │ ᴺᵁᴸᴸ   │                 0 │            1 │
+17. │ default   │ ᴺᵁᴸᴸ      │ displaySecretsInShowAndSelect │ ᴺᵁᴸᴸ     │ ᴺᵁᴸᴸ  │ ᴺᵁᴸᴸ   │                 0 │            1 │
+18. │ default   │ ᴺᵁᴸᴸ      │ INTROSPECTION                 │ ᴺᵁᴸᴸ     │ ᴺᵁᴸᴸ  │ ᴺᵁᴸᴸ   │                 0 │            1 │
+19. │ default   │ ᴺᵁᴸᴸ      │ SOURCES                       │ ᴺᵁᴸᴸ     │ ᴺᵁᴸᴸ  │ ᴺᵁᴸᴸ   │                 0 │            1 │
+20. │ default   │ ᴺᵁᴸᴸ      │ CLUSTER                       │ ᴺᵁᴸᴸ     │ ᴺᵁᴸᴸ  │ ᴺᵁᴸᴸ   │                 0 │            1 │
+21. │ default   │ ᴺᵁᴸᴸ      │ TABLE ENGINE                  │ ᴺᵁᴸᴸ     │ ᴺᵁᴸᴸ  │ ᴺᵁᴸᴸ   │                 0 │            1 │
+22. │ default   │ ᴺᵁᴸᴸ      │ SET DEFINER                   │ ᴺᵁᴸᴸ     │ ᴺᵁᴸᴸ  │ ᴺᵁᴸᴸ   │                 0 │            1 │
+23. │ default   │ ᴺᵁᴸᴸ      │ ALTER NAMED COLLECTION        │ ᴺᵁᴸᴸ     │ ᴺᵁᴸᴸ  │ ᴺᵁᴸᴸ   │                 0 │            1 │
+24. │ default   │ ᴺᵁᴸᴸ      │ CREATE NAMED COLLECTION       │ ᴺᵁᴸᴸ     │ ᴺᵁᴸᴸ  │ ᴺᵁᴸᴸ   │                 0 │            1 │
+25. │ default   │ ᴺᵁᴸᴸ      │ DROP NAMED COLLECTION         │ ᴺᵁᴸᴸ     │ ᴺᵁᴸᴸ  │ ᴺᵁᴸᴸ   │                 0 │            1 │
+26. │ default   │ ᴺᵁᴸᴸ      │ SHOW NAMED COLLECTIONS        │ ᴺᵁᴸᴸ     │ ᴺᵁᴸᴸ  │ ᴺᵁᴸᴸ   │                 0 │            1 │
+27. │ default   │ ᴺᵁᴸᴸ      │ NAMED COLLECTION              │ ᴺᵁᴸᴸ     │ ᴺᵁᴸᴸ  │ ᴺᵁᴸᴸ   │                 0 │            1 │
+28. │ ᴺᵁᴸᴸ      │ devs      │ SELECT                        │ ᴺᵁᴸᴸ     │ ᴺᵁᴸᴸ  │ ᴺᵁᴸᴸ   │                 0 │            0 │
+    └───────────┴───────────┴───────────────────────────────┴──────────┴───────┴────────┴───────────────────┴──────────────┘
+
+28 rows in set. Elapsed: 0.007 sec.
+
