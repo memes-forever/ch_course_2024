@@ -1,0 +1,147 @@
+
+cd /home
+wget https://github.com/Altinity/clickhouse-backup/releases/download/v2.5.20/clickhouse-backup-linux-amd64.tar.gz
+tar -xf clickhouse-backup-linux-amd64.tar.gz
+sudo install -o root -g root -m 0755 build/linux/amd64/clickhouse-backup /usr/local/bin
+/usr/local/bin/clickhouse-backup -v
+
+root@b1eff8f8afaf:/home# wget https://github.com/Altinity/clickhouse-backup/releases/download/v2.5.20/clickhouse-backup-linux-amd64.tar.gz
+--2024-12-06 14:40:37--  https://github.com/Altinity/clickhouse-backup/releases/download/v2.5.20/clickhouse-backup-linux-amd64.tar.gz
+Resolving github.com (github.com)... 140.82.121.3
+Connecting to github.com (github.com)|140.82.121.3|:443... connected.
+HTTP request sent, awaiting response... 302 Found
+Location: https://objects.githubusercontent.com/github-production-release-asset-2e65be/150444746/0024a586-9491-4352-9a4f-7c9f059f6708?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=releaseassetproduction%2F20241206%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20241206T144037Z&X-Amz-Expires=300&X-Amz-Signature=511614fd630ce56f5f9d5639ffcb9f4eb65563f228fba5f0c2de512c91365b0e&X-Amz-SignedHeaders=host&response-content-disposition=attachment%3B%20filename%3Dclickhouse-backup-linux-amd64.tar.gz&response-content-type=application%2Foctet-stream [following]
+--2024-12-06 14:40:37--  https://objects.githubusercontent.com/github-production-release-asset-2e65be/150444746/0024a586-9491-4352-9a4f-7c9f059f6708?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=releaseassetproduction%2F20241206%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20241206T144037Z&X-Amz-Expires=300&X-Amz-Signature=511614fd630ce56f5f9d5639ffcb9f4eb65563f228fba5f0c2de512c91365b0e&X-Amz-SignedHeaders=host&response-content-disposition=attachment%3B%20filename%3Dclickhouse-backup-linux-amd64.tar.gz&response-content-type=application%2Foctet-stream
+Resolving objects.githubusercontent.com (objects.githubusercontent.com)... 185.199.109.133, 185.199.110.133, 185.199.111.133, ...
+Connecting to objects.githubusercontent.com (objects.githubusercontent.com)|185.199.109.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 24862163 (24M) [application/octet-stream]
+Saving to: ‘clickhouse-backup-linux-amd64.tar.gz’
+
+clickhouse-backup-linux-amd64.tar.gz                 100%[======================================================================================================================>]  23.71M  8.77MB/s    in 2.7s
+
+2024-12-06 14:40:41 (8.77 MB/s) - ‘clickhouse-backup-linux-amd64.tar.gz’ saved [24862163/24862163]
+
+root@b1eff8f8afaf:/home# tar -xf clickhouse-backup-linux-amd64.tar.gz
+root@b1eff8f8afaf:/home# sudo install -o root -g root -m 0755 build/linux/amd64/clickhouse-backup
+root@b1eff8f8afaf:/home# /usr/local/bin/clickhouse-backup -v
+Version:         2.5.20
+Git Commit:      ab47d585e8418888a5169e6c0160c9859b5d6ed9
+Build Date:      2024-07-04
+
+
+
+CREATE DATABASE h13
+
+Query id: 1cf095cc-6f94-4a45-bf67-fa96eae9d503
+
+Ok.
+
+CREATE TABLE h13.t1
+(
+    `col1` String
+)
+ENGINE = MergeTree
+ORDER BY col1
+SETTINGS storage_policy = 's3_main'
+
+Query id: 40e1c149-133d-4fab-8a83-3797a0cb489a
+
+Ok.
+
+0 rows in set. Elapsed: 0.019 sec.
+
+
+insert into h13.t1 values ('1'), ('2');
+
+INSERT INTO h13.t1 FORMAT Values
+
+Query id: fd4ea547-ef54-48c4-bda2-661ed4cf52a8
+
+Ok.
+
+2 rows in set. Elapsed: 0.015 sec.
+
+
+SELECT *
+FROM h13.t1
+
+Query id: 67f20225-d6ff-4d11-83c4-07c7e4ede189
+
+   ┌─col1─┐
+1. │ 1    │
+2. │ 2    │
+   └──────┘
+
+2 rows in set. Elapsed: 0.022 sec.
+
+
+BACKUP DATABASE h13 TO Disk('s3_disk', 'h13')
+
+Query id: 295947aa-8ae3-4d54-9ec3-a3c9793c1983
+
+   ┌─id───────────────────────────────────┬─status─────────┐
+1. │ 8310dd20-033a-49fe-a219-69f7d6dcc3f6 │ BACKUP_CREATED │
+   └──────────────────────────────────────┴────────────────┘
+
+SELECT *
+FROM system.backups
+
+Query id: 24155c85-1822-4c88-a2c3-97f5e0088dd4
+
+Row 1:
+──────
+id:                8310dd20-033a-49fe-a219-69f7d6dcc3f6
+name:              Disk('s3_disk', 'h13')
+base_backup_name:
+query_id:          295947aa-8ae3-4d54-9ec3-a3c9793c1983
+status:            BACKUP_CREATED
+error:
+start_time:        2024-12-06 15:13:30
+end_time:          2024-12-06 15:13:30
+num_files:         11
+total_size:        778
+num_entries:       11
+uncompressed_size: 2364
+compressed_size:   2364
+files_read:        0
+bytes_read:        0
+ProfileEvents:     {'Query':1,'InitialQuery':1,'QueriesWithSubqueries':1,'FileOpen':54,'ReadBufferFromFileDescriptorRead':44,'ReadBufferFromFileDescriptorReadBytes':1850,'WriteBufferFromFileDescriptorWrite':18,'WriteBufferFromFileDescriptorWriteBytes':678,'OpenedFileCacheMisses':36,'OpenedFileCacheMicroseconds':84,'IOBufferAllocs':80,'IOBufferAllocBytes':31607166,'CreatedReadBufferOrdinary':36,'DiskReadElapsedMicroseconds':231,'DiskWriteElapsedMicroseconds':248,'GlobalThreadPoolLockWaitMicroseconds':268,'GlobalThreadPoolJobs':28,'LocalThreadPoolExpansions':28,'LocalThreadPoolThreadCreationMicroseconds':916,'LocalThreadPoolLockWaitMicroseconds':457,'LocalThreadPoolJobs':31,'ContextLock':62,'RWLockAcquiredReadLocks':2,'PartsLockHoldMicroseconds':4,'RealTimeMicroseconds':294899,'UserTimeMicroseconds':23079,'SystemTimeMicroseconds':13118,'SoftPageFaults':75,'HardPageFaults':1,'OSCPUWaitMicroseconds':19320,'OSCPUVirtualTimeMicroseconds':36070,'OSReadBytes':135168,'OSWriteBytes':72727,'OSReadChars':14254,'OSWriteChars':8145,'QueryProfilerRuns':1,'S3ReadMicroseconds':25742,'S3ReadRequestsCount':13,'S3WriteMicroseconds':106470,'S3WriteRequestsCount':14,'DiskS3ReadMicroseconds':25742,'DiskS3ReadRequestsCount':13,'DiskS3WriteMicroseconds':106470,'DiskS3WriteRequestsCount':14,'S3DeleteObjects':1,'S3CopyObject':5,'S3HeadObject':5,'S3PutObject':8,'S3GetObject':8,'DiskS3DeleteObjects':1,'DiskS3CopyObject':5,'DiskS3HeadObject':5,'DiskS3PutObject':8,'DiskS3GetObject':8,'ReadBufferFromS3Microseconds':14064,'ReadBufferFromS3InitMicroseconds':13963,'ReadBufferFromS3Bytes':464,'WriteBufferFromS3Microseconds':93241,'WriteBufferFromS3Bytes':2195,'RemoteFSUnprefetchedReads':16,'RemoteFSUnprefetchedBytes':464,'RemoteFSBuffers':8,'ThreadpoolReaderTaskMicroseconds':14220,'ThreadpoolReaderReadBytes':464,'SynchronousRemoteReadWaitMicroseconds':14254,'BackupsOpenedForWrite':1,'BackupWriteMetadataMicroseconds':3897,'BackupEntriesCollectorMicroseconds':9668,'BackupEntriesCollectorForTablesDataMicroseconds':7128,'BackupEntriesCollectorRunPostTasksMicroseconds':265,'LogTrace':64,'LogDebug':2,'LogInfo':14,'DiskConnectionsCreated':11,'DiskConnectionsReused':16,'DiskConnectionsPreserved':27,'DiskConnectionsExpired':1,'DiskConnectionsElapsedMicroseconds':2489,'GWPAsanAllocateSuccess':1,'GWPAsanFree':1}
+
+1 row in set. Elapsed: 0.022 sec.
+
+
+DROP TABLE h13.t1
+
+Query id: b9346b96-ef44-4fc5-9d46-d87fe12d486c
+
+Ok.
+
+0 rows in set. Elapsed: 0.010 sec.
+
+
+
+RESTORE DATABASE h13 FROM Disk('s3_disk', 'h13')
+
+Query id: 54f81ed1-c047-498b-90fe-56df67c40ddb
+
+   ┌─id───────────────────────────────────┬─status───┐
+1. │ 567b7fa9-90e0-4225-abbb-b7433ce61ae4 │ RESTORED │
+   └──────────────────────────────────────┴──────────┘
+
+1 row in set. Elapsed: 0.071 sec.
+
+
+SELECT *
+FROM h13.t1
+
+Query id: 0b77ca7b-c2c1-4ca7-bc13-a311066d2d11
+
+   ┌─col1─┐
+1. │ 1    │
+2. │ 2    │
+   └──────┘
+
+2 rows in set. Elapsed: 0.035 sec.
+
+
