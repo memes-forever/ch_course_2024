@@ -1,0 +1,289 @@
+############################################################ 0 ########################################################
+SHOW CREATE TABLE system.dashboards
+
+Query id: ca09596e-106c-4600-aa2e-7b2c62e6b254
+
+   ┌─statement──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+1. │ CREATE TABLE system.dashboards
+(
+    `dashboard` String,
+    `title` String,
+    `query` String
+)
+ENGINE = SystemDashboards
+COMMENT 'Contains queries used by /dashboard page accessible though HTTP interface. This table can be useful for monitoring and troubleshooting. The table contains a row for every chart in a dashboard.' │
+   └────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+1 row in set. Elapsed: 0.001 sec.
+
+
+SELECT
+    title,
+    query
+FROM system.dashboards
+WHERE dashboard = 'Overview'
+
+Query id: 72e3d945-6be2-4a18-b297-3b9310c7fc0f
+
+Row 1:
+──────
+title: Queries/second
+query: SELECT toStartOfInterval(event_time, INTERVAL {rounding:UInt32} SECOND)::INT AS t, avg(ProfileEvent_Query)
+FROM merge('system', '^metric_log')
+WHERE event_date >= toDate(now() - {seconds:UInt32}) AND event_time >= now() - {seconds:UInt32}
+GROUP BY t
+ORDER BY t WITH FILL STEP {rounding:UInt32}
+
+Row 2:
+──────
+title: CPU Usage (cores)
+query: SELECT toStartOfInterval(event_time, INTERVAL {rounding:UInt32} SECOND)::INT AS t, avg(ProfileEvent_OSCPUVirtualTimeMicroseconds) / 1000000
+FROM merge('system', '^metric_log')
+WHERE event_date >= toDate(now() - {seconds:UInt32}) AND event_time >= now() - {seconds:UInt32}
+GROUP BY t
+ORDER BY t WITH FILL STEP {rounding:UInt32}
+
+Row 3:
+──────
+title: Queries Running
+query: SELECT toStartOfInterval(event_time, INTERVAL {rounding:UInt32} SECOND)::INT AS t, avg(CurrentMetric_Query)
+FROM merge('system', '^metric_log')
+WHERE event_date >= toDate(now() - {seconds:UInt32}) AND event_time >= now() - {seconds:UInt32}
+GROUP BY t
+ORDER BY t WITH FILL STEP {rounding:UInt32}
+
+Row 4:
+──────
+title: Merges Running
+query: SELECT toStartOfInterval(event_time, INTERVAL {rounding:UInt32} SECOND)::INT AS t, avg(CurrentMetric_Merge)
+FROM merge('system', '^metric_log')
+WHERE event_date >= toDate(now() - {seconds:UInt32}) AND event_time >= now() - {seconds:UInt32}
+GROUP BY t
+ORDER BY t WITH FILL STEP {rounding:UInt32}
+
+Row 5:
+──────
+title: Selected Bytes/second
+query: SELECT toStartOfInterval(event_time, INTERVAL {rounding:UInt32} SECOND)::INT AS t, avg(ProfileEvent_SelectedBytes)
+FROM merge('system', '^metric_log')
+WHERE event_date >= toDate(now() - {seconds:UInt32}) AND event_time >= now() - {seconds:UInt32}
+GROUP BY t
+ORDER BY t WITH FILL STEP {rounding:UInt32}
+
+Row 6:
+──────
+title: IO Wait
+query: SELECT toStartOfInterval(event_time, INTERVAL {rounding:UInt32} SECOND)::INT AS t, avg(ProfileEvent_OSIOWaitMicroseconds) / 1000000
+FROM merge('system', '^metric_log')
+WHERE event_date >= toDate(now() - {seconds:UInt32}) AND event_time >= now() - {seconds:UInt32}
+GROUP BY t
+ORDER BY t WITH FILL STEP {rounding:UInt32}
+
+Row 7:
+──────
+title: CPU Wait
+query: SELECT toStartOfInterval(event_time, INTERVAL {rounding:UInt32} SECOND)::INT AS t, avg(ProfileEvent_OSCPUWaitMicroseconds) / 1000000
+FROM merge('system', '^metric_log')
+WHERE event_date >= toDate(now() - {seconds:UInt32}) AND event_time >= now() - {seconds:UInt32}
+GROUP BY t
+ORDER BY t WITH FILL STEP {rounding:UInt32}
+
+Row 8:
+──────
+title: OS CPU Usage (Userspace)
+query: SELECT toStartOfInterval(event_time, INTERVAL {rounding:UInt32} SECOND)::INT AS t, avg(value)
+FROM merge('system', '^asynchronous_metric_log')
+WHERE event_date >= toDate(now() - {seconds:UInt32}) AND event_time >= now() - {seconds:UInt32} AND metric = 'OSUserTimeNormalized'
+GROUP BY t
+ORDER BY t WITH FILL STEP {rounding:UInt32}
+
+Row 9:
+───────
+title: OS CPU Usage (Kernel)
+query: SELECT toStartOfInterval(event_time, INTERVAL {rounding:UInt32} SECOND)::INT AS t, avg(value)
+FROM merge('system', '^asynchronous_metric_log')
+WHERE event_date >= toDate(now() - {seconds:UInt32}) AND event_time >= now() - {seconds:UInt32} AND metric = 'OSSystemTimeNormalized'
+GROUP BY t
+ORDER BY t WITH FILL STEP {rounding:UInt32}
+
+Row 10:
+───────
+title: Read From Disk
+query: SELECT toStartOfInterval(event_time, INTERVAL {rounding:UInt32} SECOND)::INT AS t, avg(ProfileEvent_OSReadBytes)
+FROM merge('system', '^metric_log')
+WHERE event_date >= toDate(now() - {seconds:UInt32}) AND event_time >= now() - {seconds:UInt32}
+GROUP BY t
+ORDER BY t WITH FILL STEP {rounding:UInt32}
+
+Row 11:
+───────
+title: Read From Filesystem
+query: SELECT toStartOfInterval(event_time, INTERVAL {rounding:UInt32} SECOND)::INT AS t, avg(ProfileEvent_OSReadChars)
+FROM merge('system', '^metric_log')
+WHERE event_date >= toDate(now() - {seconds:UInt32}) AND event_time >= now() - {seconds:UInt32}
+GROUP BY t
+ORDER BY t WITH FILL STEP {rounding:UInt32}
+
+Row 12:
+───────
+title: Memory (tracked)
+query: SELECT toStartOfInterval(event_time, INTERVAL {rounding:UInt32} SECOND)::INT AS t, avg(CurrentMetric_MemoryTracking)
+FROM merge('system', '^metric_log')
+WHERE event_date >= toDate(now() - {seconds:UInt32}) AND event_time >= now() - {seconds:UInt32}
+GROUP BY t
+ORDER BY t WITH FILL STEP {rounding:UInt32}
+
+Row 13:
+───────
+title: Load Average (15 minutes)
+query: SELECT toStartOfInterval(event_time, INTERVAL {rounding:UInt32} SECOND)::INT AS t, avg(value)
+FROM merge('system', '^asynchronous_metric_log')
+WHERE event_date >= toDate(now() - {seconds:UInt32}) AND event_time >= now() - {seconds:UInt32} AND metric = 'LoadAverage15'
+GROUP BY t
+ORDER BY t WITH FILL STEP {rounding:UInt32}
+
+Row 14:
+───────
+title: Selected Rows/second
+query: SELECT toStartOfInterval(event_time, INTERVAL {rounding:UInt32} SECOND)::INT AS t, avg(ProfileEvent_SelectedRows)
+FROM merge('system', '^metric_log')
+WHERE event_date >= toDate(now() - {seconds:UInt32}) AND event_time >= now() - {seconds:UInt32}
+GROUP BY t
+ORDER BY t WITH FILL STEP {rounding:UInt32}
+
+Row 15:
+───────
+title: Inserted Rows/second
+query: SELECT toStartOfInterval(event_time, INTERVAL {rounding:UInt32} SECOND)::INT AS t, avg(ProfileEvent_InsertedRows)
+FROM merge('system', '^metric_log')
+WHERE event_date >= toDate(now() - {seconds:UInt32}) AND event_time >= now() - {seconds:UInt32}
+GROUP BY t
+ORDER BY t WITH FILL STEP {rounding:UInt32}
+
+Row 16:
+───────
+title: Total MergeTree Parts
+query: SELECT toStartOfInterval(event_time, INTERVAL {rounding:UInt32} SECOND)::INT AS t, avg(value)
+FROM merge('system', '^asynchronous_metric_log')
+WHERE event_date >= toDate(now() - {seconds:UInt32}) AND event_time >= now() - {seconds:UInt32} AND metric = 'TotalPartsOfMergeTreeTables'
+GROUP BY t
+ORDER BY t WITH FILL STEP {rounding:UInt32}
+
+Row 17:
+───────
+title: Max Parts For Partition
+query: SELECT toStartOfInterval(event_time, INTERVAL {rounding:UInt32} SECOND)::INT AS t, max(value)
+FROM merge('system', '^asynchronous_metric_log')
+WHERE event_date >= toDate(now() - {seconds:UInt32}) AND event_time >= now() - {seconds:UInt32} AND metric = 'MaxPartCountForPartition'
+GROUP BY t
+ORDER BY t WITH FILL STEP {rounding:UInt32}
+
+Row 18:
+───────
+title: Concurrent network connections
+query: SELECT toStartOfInterval(event_time, INTERVAL {rounding:UInt32} SECOND)::INT AS t,
+    sum(CurrentMetric_TCPConnection) AS TCP_Connections,
+    sum(CurrentMetric_MySQLConnection) AS MySQL_Connections,
+    sum(CurrentMetric_HTTPConnection) AS HTTP_Connections
+FROM merge('system', '^metric_log')
+WHERE event_date >= toDate(now() - {seconds:UInt32}) AND event_time >= now() - {seconds:UInt32}
+GROUP BY t
+ORDER BY t WITH FILL STEP {rounding:UInt32}
+
+18 rows in set. Elapsed: 0.001 sec.
+
+############################################################ end 0 ########################################################
+############################################################ 1 ########################################################
+
+1. Придумать 2 или более запросов для персонализированного мониторинга.
+
+SELECT toStartOfInterval(last_error_time, INTERVAL {rounding:UInt32} SECOND)::INT AS t,
+    count() AS errors
+FROM system.errors
+WHERE last_error_time >= toDate(now() - {seconds:UInt32}) AND last_error_time >= now() - {seconds:UInt32}
+GROUP BY t
+
+
+SELECT toStartOfInterval(latest_fail_time, INTERVAL {rounding:UInt32} SECOND)::INT AS t,
+    count() AS mutation_errors
+FROM system.mutations
+WHERE latest_fail_time >= toDate(now() - {seconds:UInt32}) AND latest_fail_time >= now() - {seconds:UInt32}
+GROUP BY t
+
+
+SELECT toStartOfInterval(last_queue_update, INTERVAL {rounding:UInt32} SECOND)::INT AS t,
+ count() as replicas_is_readonly
+ count(last_queue_update_exception) as last_queue_update_exception,
+ count(zookeeper_exception) as zookeeper_exception
+FROM system.replicas
+WHERE last_queue_update >= toDate(now() - {seconds:UInt32}) AND last_queue_update >= now() - {seconds:UInt32}
+    and is_readonly = 1
+GROUP BY t
+;
+
+
+############################################################ end 1 ########################################################
+############################################################ 2 ########################################################
+
+2. Создать таблицу с этими запросами в нужном формате
+
+CREATE TABLE default.dashboards
+(
+    `dashboard` String,
+    `title` String,
+    `query` String
+)
+ENGINE = MergeTree
+ORDER BY dashboard
+
+Query id: 18c1a826-d436-4302-9b25-a65433469ed7
+
+Ok.
+
+0 rows in set. Elapsed: 0.009 sec.
+
+
+-- for copy
+-- insert into default.dashboards select * from system.dashboards;
+
+
+
+INSERT INTO default.dashboards Values
+(
+    'Overview',
+    'Check DB errors',
+    'SELECT toStartOfInterval(last_error_time, INTERVAL {rounding:UInt32} SECOND)::INT AS t,
+    count() AS errors
+FROM system.errors
+WHERE last_error_time >= toDate(now() - {seconds:UInt32}) AND last_error_time >= now() - {seconds:UInt32}
+GROUP BY t'
+),
+(
+    'Overview',
+    'Check Mutation errors',
+    'SELECT toStartOfInterval(latest_fail_time, INTERVAL {rounding:UInt32} SECOND)::INT AS t,
+    count() AS mutation_errors
+FROM system.mutations
+WHERE latest_fail_time >= toDate(now() - {seconds:UInt32}) AND latest_fail_time >= now() - {seconds:UInt32}
+GROUP BY t'
+),
+(
+    'Overview',
+    'Check Replicas Errors',
+    'SELECT toStartOfInterval(last_queue_update, INTERVAL {rounding:UInt32} SECOND)::INT AS t,
+ count() as replicas_is_readonly,
+ count(last_queue_update_exception) as last_queue_update_exception,
+ count(zookeeper_exception) as zookeeper_exception
+FROM system.replicas
+WHERE last_queue_update >= toDate(now() - {seconds:UInt32}) AND last_queue_update >= now() - {seconds:UInt32}
+    and is_readonly = 1
+GROUP BY t'
+);
+
+Query id: 3fba7d54-bfc0-4578-90aa-dc7580649f54
+
+Ok.
+
+3 rows in set. Elapsed: 0.008 sec.
+
+############################################################ end 2 ########################################################
