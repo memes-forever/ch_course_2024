@@ -1,0 +1,231 @@
+############################################################ 0 ########################################################
+
+SHOW CREATE TABLE trips
+
+Query id: e968b5b4-4c9a-45b2-9c90-115a366d7c61
+
+   ┌─statement──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+1. │ CREATE TABLE default.trips
+(
+    `trip_id` UInt32,
+    `pickup_datetime` DateTime,
+    `dropoff_datetime` DateTime,
+    `pickup_longitude` Nullable(Float64),
+    `pickup_latitude` Nullable(Float64),
+    `dropoff_longitude` Nullable(Float64),
+    `dropoff_latitude` Nullable(Float64),
+    `passenger_count` UInt8,
+    `trip_distance` Float32,
+    `fare_amount` Float32,
+    `extra` Float32,
+    `tip_amount` Float32,
+    `tolls_amount` Float32,
+    `total_amount` Float32,
+    `payment_type` Enum8('CSH' = 1, 'CRE' = 2, 'NOC' = 3, 'DIS' = 4, 'UNK' = 5),
+    `pickup_ntaname` LowCardinality(String),
+    `dropoff_ntaname` LowCardinality(String)
+)
+ENGINE = MergeTree
+PRIMARY KEY (pickup_datetime, dropoff_datetime)
+ORDER BY (pickup_datetime, dropoff_datetime)
+SETTINGS index_granularity = 8192 │
+   └────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+1 row in set. Elapsed: 0.002 sec.
+
+
+SELECT count()
+FROM trips
+
+Query id: 55765641-c65e-421a-ba68-d68d6ee3392b
+
+   ┌─count()─┐
+1. │ 3000317 │ -- 3.00 million
+   └─────────┘
+
+1 row in set. Elapsed: 0.004 sec.
+
+Example row
+
+trip_id:           1201215784
+pickup_datetime:   2015-07-01 00:01:07
+dropoff_datetime:  2015-07-01 00:08:07
+pickup_longitude:  -74.01366424560547
+pickup_latitude:   40.71377944946289
+dropoff_longitude: -74.00626373291016
+dropoff_latitude:  40.708011627197266
+passenger_count:   2
+trip_distance:     1.1
+fare_amount:       6.5
+extra:             0.5
+tip_amount:        1.55
+tolls_amount:      0
+total_amount:      9.35
+payment_type:      CSH
+pickup_ntaname:    SoHo-TriBeCa-Civic Center-Little Italy
+dropoff_ntaname:   Battery Park City-Lower Manhattan
+
+############################################################ end 0 ########################################################
+############################################################ 1 ########################################################
+
+1. Выполнить запрос с WHERE не использующим ПК. Выполнить запрос с WHERE использующим ПК.
+   Сравнить text_log запросов, предоставить строки лога относящиеся к пробегу основного индекса.
+
+SELECT count()
+FROM trips
+WHERE trip_distance < 1
+
+Query id: 5fab058f-b7a4-4d7c-9ddd-bde6945f5c30
+
+[d979b380b3e7] 2025.01.08 08:28:29.533160 [ 68 ] {5fab058f-b7a4-4d7c-9ddd-bde6945f5c30} <Debug> executeQuery: (from 127.0.0.1:37558) select count() from trips where trip_distance < 1 (stage: Complete)
+[d979b380b3e7] 2025.01.08 08:28:29.534016 [ 68 ] {5fab058f-b7a4-4d7c-9ddd-bde6945f5c30} <Trace> Planner: Query to stage Complete
+[d979b380b3e7] 2025.01.08 08:28:29.534188 [ 68 ] {5fab058f-b7a4-4d7c-9ddd-bde6945f5c30} <Trace> Planner: Query from stage FetchColumns to stage Complete
+[d979b380b3e7] 2025.01.08 08:28:29.536458 [ 68 ] {5fab058f-b7a4-4d7c-9ddd-bde6945f5c30} <Trace> QueryPlanOptimizePrewhere: The min valid primary key position for moving to the tail of PREWHERE is -1
+[d979b380b3e7] 2025.01.08 08:28:29.537863 [ 68 ] {5fab058f-b7a4-4d7c-9ddd-bde6945f5c30} <Debug> default.trips (4ff38645-f120-4793-ad66-76ed43b784a9) (SelectExecutor): Key condition: unknown
+[d979b380b3e7] 2025.01.08 08:28:29.537910 [ 68 ] {5fab058f-b7a4-4d7c-9ddd-bde6945f5c30} <Trace> default.trips (4ff38645-f120-4793-ad66-76ed43b784a9) (SelectExecutor): Filtering marks by primary and secondary keys
+[d979b380b3e7] 2025.01.08 08:28:29.538019 [ 68 ] {5fab058f-b7a4-4d7c-9ddd-bde6945f5c30} <Debug> default.trips (4ff38645-f120-4793-ad66-76ed43b784a9) (SelectExecutor): Selected 1/1 parts by partition key, 1 parts by primary key, 367/367 marks by primary key, 367 marks to read from 1 ranges
+[d979b380b3e7] 2025.01.08 08:28:29.538041 [ 68 ] {5fab058f-b7a4-4d7c-9ddd-bde6945f5c30} <Trace> default.trips (4ff38645-f120-4793-ad66-76ed43b784a9) (SelectExecutor): Spreading mark ranges among streams (default reading)
+[d979b380b3e7] 2025.01.08 08:28:29.538158 [ 68 ] {5fab058f-b7a4-4d7c-9ddd-bde6945f5c30} <Debug> default.trips (4ff38645-f120-4793-ad66-76ed43b784a9) (SelectExecutor): Reading approx. 3000317 rows with 4 streams
+[d979b380b3e7] 2025.01.08 08:28:29.540601 [ 713 ] {5fab058f-b7a4-4d7c-9ddd-bde6945f5c30} <Trace> AggregatingTransform: Aggregating
+[d979b380b3e7] 2025.01.08 08:28:29.540644 [ 713 ] {5fab058f-b7a4-4d7c-9ddd-bde6945f5c30} <Trace> Aggregator: Aggregation method: without_key
+[d979b380b3e7] 2025.01.08 08:28:29.540715 [ 723 ] {5fab058f-b7a4-4d7c-9ddd-bde6945f5c30} <Trace> AggregatingTransform: Aggregating
+[d979b380b3e7] 2025.01.08 08:28:29.540738 [ 723 ] {5fab058f-b7a4-4d7c-9ddd-bde6945f5c30} <Trace> Aggregator: Aggregation method: without_key
+[d979b380b3e7] 2025.01.08 08:28:29.540977 [ 729 ] {5fab058f-b7a4-4d7c-9ddd-bde6945f5c30} <Trace> AggregatingTransform: Aggregating
+[d979b380b3e7] 2025.01.08 08:28:29.541038 [ 729 ] {5fab058f-b7a4-4d7c-9ddd-bde6945f5c30} <Trace> Aggregator: Aggregation method: without_key
+[d979b380b3e7] 2025.01.08 08:28:29.541027 [ 753 ] {5fab058f-b7a4-4d7c-9ddd-bde6945f5c30} <Trace> AggregatingTransform: Aggregating
+[d979b380b3e7] 2025.01.08 08:28:29.541053 [ 753 ] {5fab058f-b7a4-4d7c-9ddd-bde6945f5c30} <Trace> Aggregator: Aggregation method: without_key
+[d979b380b3e7] 2025.01.08 08:28:29.547253 [ 713 ] {5fab058f-b7a4-4d7c-9ddd-bde6945f5c30} <Trace> AggregatingTransform: Aggregated. 164553 to 1 rows (from 0.00 B) in 0.0088305 sec. (18634618.651 rows/sec., 0.00 B/sec.)
+[d979b380b3e7] 2025.01.08 08:28:29.547259 [ 753 ] {5fab058f-b7a4-4d7c-9ddd-bde6945f5c30} <Trace> AggregatingTransform: Aggregated. 165937 to 1 rows (from 0.00 B) in 0.008343917 sec. (19887182.483 rows/sec., 0.00 B/sec.)
+[d979b380b3e7] 2025.01.08 08:28:29.547650 [ 723 ] {5fab058f-b7a4-4d7c-9ddd-bde6945f5c30} <Trace> AggregatingTransform: Aggregated. 164930 to 1 rows (from 0.00 B) in 0.008749625 sec. (18849950.712 rows/sec., 0.00 B/sec.)
+[d979b380b3e7] 2025.01.08 08:28:29.547834 [ 729 ] {5fab058f-b7a4-4d7c-9ddd-bde6945f5c30} <Trace> AggregatingTransform: Aggregated. 165059 to 1 rows (from 0.00 B) in 0.008932083 sec. (18479340.149 rows/sec., 0.00 B/sec.)
+[d979b380b3e7] 2025.01.08 08:28:29.547848 [ 729 ] {5fab058f-b7a4-4d7c-9ddd-bde6945f5c30} <Trace> Aggregator: Merging aggregated data
+[d979b380b3e7] 2025.01.08 08:28:29.547867 [ 729 ] {5fab058f-b7a4-4d7c-9ddd-bde6945f5c30} <Trace> HashTablesStatistics: Statistics updated for key=15975157111250614545: new sum_of_sizes=4, median_size=1
+   ┌─count()─┐
+1. │  660479 │
+   └─────────┘
+[d979b380b3e7] 2025.01.08 08:28:29.548959 [ 68 ] {5fab058f-b7a4-4d7c-9ddd-bde6945f5c30} <Debug> executeQuery: Read 3000317 rows, 11.45 MiB in 0.015927 sec., 188379293.02442393 rows/sec., 718.61 MiB/sec.
+[d979b380b3e7] 2025.01.08 08:28:29.549091 [ 68 ] {5fab058f-b7a4-4d7c-9ddd-bde6945f5c30} <Debug> MemoryTracker: Peak memory usage (for query): 542.59 KiB.
+[d979b380b3e7] 2025.01.08 08:28:29.549104 [ 68 ] {5fab058f-b7a4-4d7c-9ddd-bde6945f5c30} <Debug> TCPHandler: Processed in 0.016603333 sec.
+
+1 row in set. Elapsed: 0.016 sec. Processed 3.00 million rows, 12.00 MB (183.28 million rows/s., 733.13 MB/s.)
+Peak memory usage: 542.59 KiB.
+
+
+
+
+
+
+
+
+SELECT count()
+FROM trips
+WHERE (pickup_datetime >= '2015-07-01') AND (pickup_datetime <= '2015-07-02')
+
+Query id: 6aec7889-321d-4617-a3b6-671fda2c1221
+
+[d979b380b3e7] 2025.01.08 08:30:05.414441 [ 68 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Debug> executeQuery: (from 127.0.0.1:37558) SELECT count() FROM trips WHERE pickup_datetime between '2015-07-01' and '2015-07-02' (stage: Complete)
+[d979b380b3e7] 2025.01.08 08:30:05.415918 [ 68 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Trace> Planner: Query to stage Complete
+[d979b380b3e7] 2025.01.08 08:30:05.416150 [ 68 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Trace> Planner: Query from stage FetchColumns to stage Complete
+[d979b380b3e7] 2025.01.08 08:30:05.417518 [ 68 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Trace> QueryPlanOptimizePrewhere: The min valid primary key position for moving to the tail of PREWHERE is 0
+[d979b380b3e7] 2025.01.08 08:30:05.418152 [ 68 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Debug> default.trips (4ff38645-f120-4793-ad66-76ed43b784a9) (SelectExecutor): Key condition: (column 0 in [1435708800, +Inf)), (column 0 in (-Inf, 1435795200]), and
+[d979b380b3e7] 2025.01.08 08:30:05.418197 [ 68 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Trace> default.trips (4ff38645-f120-4793-ad66-76ed43b784a9) (SelectExecutor): Filtering marks by primary and secondary keys
+[d979b380b3e7] 2025.01.08 08:30:05.418248 [ 68 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Trace> default.trips (4ff38645-f120-4793-ad66-76ed43b784a9) (SelectExecutor): Running binary search on index range for part all_1_3_1 (368 marks)
+[d979b380b3e7] 2025.01.08 08:30:05.418931 [ 68 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Trace> default.trips (4ff38645-f120-4793-ad66-76ed43b784a9) (SelectExecutor): Found (LEFT) boundary mark: 0
+[d979b380b3e7] 2025.01.08 08:30:05.418965 [ 68 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Trace> default.trips (4ff38645-f120-4793-ad66-76ed43b784a9) (SelectExecutor): Found (RIGHT) boundary mark: 3
+[d979b380b3e7] 2025.01.08 08:30:05.418995 [ 68 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Trace> default.trips (4ff38645-f120-4793-ad66-76ed43b784a9) (SelectExecutor): Found continuous range with exact range in 16 steps
+[d979b380b3e7] 2025.01.08 08:30:05.419157 [ 68 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Debug> default.trips (4ff38645-f120-4793-ad66-76ed43b784a9) (SelectExecutor): Selected 1/1 parts by partition key, 1 parts by primary key, 3/367 marks by primary key, 1 marks to read from 1 ranges
+[d979b380b3e7] 2025.01.08 08:30:05.419184 [ 68 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Trace> default.trips (4ff38645-f120-4793-ad66-76ed43b784a9) (SelectExecutor): Spreading mark ranges among streams (default reading)
+[d979b380b3e7] 2025.01.08 08:30:05.419254 [ 68 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Trace> default.trips (4ff38645-f120-4793-ad66-76ed43b784a9) (SelectExecutor): Reading 1 ranges in order from part all_1_3_1, approx. 8192 rows starting from 16384
+[d979b380b3e7] 2025.01.08 08:30:05.419988 [ 754 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Trace> AggregatingTransform: Aggregating
+[d979b380b3e7] 2025.01.08 08:30:05.420025 [ 754 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Trace> Aggregator: Aggregation method: without_key
+[d979b380b3e7] 2025.01.08 08:30:05.420130 [ 754 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Trace> AggregatingTransform: Aggregated. 1 to 1 rows (from 16.00 B) in 0.000679542 sec. (1471.579 rows/sec., 22.99 KiB/sec.)
+[d979b380b3e7] 2025.01.08 08:30:05.420417 [ 727 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Trace> AggregatingTransform: Aggregating
+[d979b380b3e7] 2025.01.08 08:30:05.420458 [ 727 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Trace> Aggregator: Aggregation method: without_key
+[d979b380b3e7] 2025.01.08 08:30:05.420526 [ 727 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Trace> AggregatingTransform: Aggregated. 2844 to 1 rows (from 0.00 B) in 0.001111042 sec. (2559759.217 rows/sec., 0.00 B/sec.)
+[d979b380b3e7] 2025.01.08 08:30:05.420539 [ 727 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Trace> Aggregator: Merging aggregated data
+[d979b380b3e7] 2025.01.08 08:30:05.420559 [ 727 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Trace> HashTablesStatistics: Statistics updated for key=16940908661913928974: new sum_of_sizes=2, median_size=1
+   ┌─count()─┐
+1. │   19228 │
+   └─────────┘
+[d979b380b3e7] 2025.01.08 08:30:05.421472 [ 68 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Debug> executeQuery: Read 8193 rows, 32.02 KiB in 0.007135 sec., 1148283.1114225648 rows/sec., 4.38 MiB/sec.
+[d979b380b3e7] 2025.01.08 08:30:05.421575 [ 68 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Debug> MemoryTracker: Peak memory usage (for query): 324.06 KiB.
+[d979b380b3e7] 2025.01.08 08:30:05.421615 [ 68 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Debug> TCPHandler: Processed in 0.008028208 sec.
+
+1 row in set. Elapsed: 0.008 sec. Processed 8.19 thousand rows, 32.78 KB (1.05 million rows/s., 4.19 MB/s.)
+Peak memory usage: 324.06 KiB.
+
+
+
+
+
+В этих строчках второго запроса использующий PK видно использование индекса.
+
+[d979b380b3e7] 2025.01.08 08:30:05.418152 [ 68 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Debug> default.trips (4ff38645-f120-4793-ad66-76ed43b784a9) (SelectExecutor): Key condition: (column 0 in [1435708800, +Inf)), (column 0 in (-Inf, 1435795200]), and
+[d979b380b3e7] 2025.01.08 08:30:05.418197 [ 68 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Trace> default.trips (4ff38645-f120-4793-ad66-76ed43b784a9) (SelectExecutor): Filtering marks by primary and secondary keys
+[d979b380b3e7] 2025.01.08 08:30:05.418248 [ 68 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Trace> default.trips (4ff38645-f120-4793-ad66-76ed43b784a9) (SelectExecutor): Running binary search on index range for part all_1_3_1 (368 marks)
+[d979b380b3e7] 2025.01.08 08:30:05.418931 [ 68 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Trace> default.trips (4ff38645-f120-4793-ad66-76ed43b784a9) (SelectExecutor): Found (LEFT) boundary mark: 0
+[d979b380b3e7] 2025.01.08 08:30:05.418965 [ 68 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Trace> default.trips (4ff38645-f120-4793-ad66-76ed43b784a9) (SelectExecutor): Found (RIGHT) boundary mark: 3
+[d979b380b3e7] 2025.01.08 08:30:05.418995 [ 68 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Trace> default.trips (4ff38645-f120-4793-ad66-76ed43b784a9) (SelectExecutor): Found continuous range with exact range in 16 steps
+[d979b380b3e7] 2025.01.08 08:30:05.419157 [ 68 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Debug> default.trips (4ff38645-f120-4793-ad66-76ed43b784a9) (SelectExecutor): Selected 1/1 parts by partition key, 1 parts by primary key, 3/367 marks by primary key, 1 marks to read from 1 ranges
+[d979b380b3e7] 2025.01.08 08:30:05.419184 [ 68 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Trace> default.trips (4ff38645-f120-4793-ad66-76ed43b784a9) (SelectExecutor): Spreading mark ranges among streams (default reading)
+[d979b380b3e7] 2025.01.08 08:30:05.419254 [ 68 ] {6aec7889-321d-4617-a3b6-671fda2c1221} <Trace> default.trips (4ff38645-f120-4793-ad66-76ed43b784a9) (SelectExecutor): Reading 1 ranges in order from part all_1_3_1, approx. 8192 rows starting from 16384
+
+
+
+############################################################ end 1 ########################################################
+############################################################ 2 ########################################################
+
+2. Показать тот же индекс через EXPLAIN
+
+EXPLAIN indexes = 1
+SELECT count()
+FROM trips
+WHERE trip_distance < 1
+
+Query id: 26463f09-19ce-49f8-af24-021cccefc8a3
+
+    ┌─explain────────────────────────────────────────────────────────────┐
+ 1. │ Expression ((Project names + Projection))                          │
+ 2. │   Aggregating                                                      │
+ 3. │     Expression (Before GROUP BY)                                   │
+ 4. │       Filter ((WHERE + Change column names to column identifiers)) │
+ 5. │         ReadFromMergeTree (default.trips)                          │
+ 6. │         Indexes:                                                   │
+ 7. │           PrimaryKey                                               │
+ 8. │             Condition: true                                        │
+ 9. │             Parts: 1/1                                             │
+10. │             Granules: 367/367                                      │
+    └────────────────────────────────────────────────────────────────────┘
+
+10 rows in set. Elapsed: 0.004 sec.
+
+
+
+
+EXPLAIN indexes = 1
+SELECT count()
+FROM trips
+WHERE (pickup_datetime >= '2015-07-01') AND (pickup_datetime <= '2015-07-02')
+
+Query id: b8482ec9-212e-463f-9ef7-4255717125d5
+
+    ┌─explain──────────────────────────────────────────────────────────────────────────────────────────────────────┐
+ 1. │ Expression ((Project names + Projection))                                                                    │
+ 2. │   AggregatingProjection                                                                                      │
+ 3. │     Expression (Before GROUP BY)                                                                             │
+ 4. │       Filter ((WHERE + Change column names to column identifiers))                                           │
+ 5. │         ReadFromMergeTree (default.trips)                                                                    │
+ 6. │         Indexes:                                                                                             │
+ 7. │           PrimaryKey                                                                                         │
+ 8. │             Keys:                                                                                            │
+ 9. │               pickup_datetime                                                                                │
+10. │             Condition: and((pickup_datetime in (-Inf, 1435795200]), (pickup_datetime in [1435708800, +Inf))) │
+11. │             Parts: 1/1                                                                                       │
+12. │             Granules: 3/367                                                                                  │
+13. │     ReadFromPreparedSource (Optimized trivial count)                                                         │
+    └──────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+13 rows in set. Elapsed: 0.005 sec.
+
+
+############################################################ end 2 ########################################################
