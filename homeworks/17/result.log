@@ -1,0 +1,43 @@
+############################################################ 1 ########################################################
+
+развернуть и cконфигурировать BI-решение;
+
+docker pull apache/superset:4.1.1
+docker run -d -p 8088:8088 -e "SUPERSET_SECRET_KEY=your_secret_key_here" --name superset apache/superset:4.1.1
+
+docker exec -it superset superset fab create-admin \
+          --username admin \
+          --firstname Superset \
+          --lastname Admin \
+          --email admin@superset.com \
+          --password admin
+
+
+docker exec -it superset superset db upgrade
+docker exec -it superset superset load_examples
+docker exec -it superset superset init
+docker exec -it superset pip install clickhouse-connect
+
+docker ps
+CONTAINER ID   IMAGE                          COMMAND                  CREATED          STATUS                    PORTS                                                          NAMES
+6a73583888a1   apache/superset:4.1.1          "/usr/bin/run-server…"   11 minutes ago   Up 43 seconds (healthy)   0.0.0.0:8088->8088/tcp                                         superset
+d979b380b3e7   clickhouse/clickhouse-server   "/entrypoint.sh"         2 months ago     Up 6 seconds              127.0.0.1:8123->8123/tcp, 127.0.0.1:9000->9000/tcp, 9009/tcp   clickhouse-clickhouse-1
+
+############################################################ end 1 ########################################################
+############################################################ 2 ########################################################
+
+* настроить подключение к источникам данных;
+
+Датасет я выбрал imdb.
+
+screen connection.png
+screen datasets.png
+
+############################################################ end 2 ########################################################
+############################################################ 3 ########################################################
+
+* рассмотреть интерактивный визуальный анализ данных.
+
+screen dashboard.png
+
+############################################################ end 3 ########################################################
