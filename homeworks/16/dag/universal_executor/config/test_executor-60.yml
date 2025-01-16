@@ -1,0 +1,8 @@
+tasks:
+  - conn_id: clickhouse_local_test
+    conn_type: clickhouse
+    sql:
+    - name: test_load_from_api
+    - name: test_copy_data
+      dependent_tasks:
+        - test_executor-60: clickhouse_local_test__test_load_from_api
