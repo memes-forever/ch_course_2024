@@ -1,0 +1,171 @@
+############################################################ 1 ########################################################
+
+1. Инициализировать БД PostgreSQL любым способом. Пример - https://github.com/AlexeyFerum/teaching_time/wiki/Sbornaya-solyanka#postgres
+
+docker ps
+CONTAINER ID   IMAGE                          COMMAND                  CREATED          STATUS                    PORTS                                                          NAMES
+0389bda7eeae   postgres                       "docker-entrypoint.s…"   28 seconds ago   Up 28 seconds (healthy)   0.0.0.0:5432->5432/tcp                                         pg-db-1
+d979b380b3e7   clickhouse/clickhouse-server   "/entrypoint.sh"         3 months ago     Up 16 seconds             127.0.0.1:8123->8123/tcp, 127.0.0.1:9000->9000/tcp, 9009/tcp   clickhouse-clickhouse-1
+
+docker network ls
+NETWORK ID     NAME                     DRIVER    SCOPE
+a664ab80b18f   clickhouse_default       bridge    local
+bada66be49ad   pg_default               bridge    local
+
+# т.к. разные стэки приложений, конектим сеть с постгрей в клик
+docker network connect pg_default clickhouse-clickhouse-1
+
+CREATE DATABASE pg_test
+
+Query id: f2607f7b-bac4-4fda-9365-fbe7a3114fbe
+
+Ok.
+
+0 rows in set. Elapsed: 0.003 sec.
+
+
+USE pg_test
+
+Query id: 0b5365b9-c224-4e52-a4ff-f9280cf1717e
+
+Ok.
+
+0 rows in set. Elapsed: 0.001 sec.
+
+############################################################ end 1 ########################################################
+############################################################ 2 ########################################################
+
+2. Загрузить тестовый датасет
+
+# гружу этот https://github.com/neondatabase-labs/postgres-sample-dbs/blob/main/netflix.sql
+
+psql -d "postgres://dwh_test:dwh_test@localhost/dwh_test" -f netflix.sql
+
+dwh_test=# SELECT table_name FROM information_schema.tables WHERE table_schema='public';
+  table_name
+---------------
+ netflix_shows
+(1 row)
+
+############################################################ end 2 ########################################################
+############################################################ 3 ########################################################
+
+3. На стороне ClickHouse с помощью функции postgres запросить данные.
+
+SELECT *
+FROM postgresql('db', 'dwh_test', 'netflix_shows', 'dwh_test', 'dwh_test', 'public')
+LIMIT 10
+
+Query id: 4b6c6ece-a48c-4714-9b58-9451f43ad00d
+
+    ┌─show_id─┬─type────┬─title────────────────────────────┬─director──────────────────────┬─cast_members───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┬─country───────────────────────────────────────────────────────────────┬─date_added─┬─release_year─┬─rating─┬─duration──┬─listed_in─────────────────────────────────────────────────────┬─description───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+ 1. │ s1      │ Movie   │ Dick Johnson Is Dead             │ Kirsten Johnson               │ ᴺᵁᴸᴸ                                                                                                                                                                                                                                                       │ United States                                                         │ 2021-09-25 │         2020 │ PG-13  │ 90 min    │ Documentaries                                                 │ As her father nears the end of his life, filmmaker Kirsten Johnson stages his death in inventive and comical ways to help them both face the inevitable.  │
+ 2. │ s2      │ TV Show │ Blood & Water                    │ ᴺᵁᴸᴸ                          │ Ama Qamata, Khosi Ngema, Gail Mabalane, Thabang Molaba, Dillon Windvogel, Natasha Thahane, Arno Greeff, Xolile Tshabalala, Getmore Sithole, Cindy Mahlangu, Ryle De Morny, Greteli Fincham, Sello Maake Ka-Ncube, Odwa Gwanya, Mekaila Mathys, Sandi Schultz, Duane Williams, Shamilla Miller, Patrick Mofokeng │ South Africa                                                          │ 2021-09-24 │         2021 │ TV-MA  │ 2 Seasons │ International TV Shows, TV Dramas, TV Mysteries               │ After crossing paths at a party, a Cape Town teen sets out to prove whether a private-school swimming star is her sister who was abducted at birth.       │
+ 3. │ s3      │ TV Show │ Ganglands                        │ Julien Leclercq               │ Sami Bouajila, Tracy Gotoas, Samuel Jouy, Nabiha Akkari, Sofia Lesaffre, Salim Kechiouche, Noureddine Farihi, Geert Van Rampelberg, Bakary Diombera                                                                                                        │ ᴺᵁᴸᴸ                                                                  │ 2021-09-24 │         2021 │ TV-MA  │ 1 Season  │ Crime TV Shows, International TV Shows, TV Action & Adventure │ To protect his family from a powerful drug lord, skilled thief Mehdi and his expert team of robbers are pulled into a violent and deadly turf war.        │
+ 4. │ s4      │ TV Show │ Jailbirds New Orleans            │ ᴺᵁᴸᴸ                          │ ᴺᵁᴸᴸ                                                                                                                                                                                                                                                       │ ᴺᵁᴸᴸ                                                                  │ 2021-09-24 │         2021 │ TV-MA  │ 1 Season  │ Docuseries, Reality TV                                        │ Feuds, flirtations and toilet talk go down among the incarcerated women at the Orleans Justice Center in New Orleans on this gritty reality series.       │
+ 5. │ s5      │ TV Show │ Kota Factory                     │ ᴺᵁᴸᴸ                          │ Mayur More, Jitendra Kumar, Ranjan Raj, Alam Khan, Ahsaas Channa, Revathi Pillai, Urvi Singh, Arun Kumar                                                                                                                                                   │ India                                                                 │ 2021-09-24 │         2021 │ TV-MA  │ 2 Seasons │ International TV Shows, Romantic TV Shows, TV Comedies        │ In a city of coaching centers known to train India’s finest collegiate minds, an earnest but unexceptional student and his friends navigate campus life.  │
+ 6. │ s6      │ TV Show │ Midnight Mass                    │ Mike Flanagan                 │ Kate Siegel, Zach Gilford, Hamish Linklater, Henry Thomas, Kristin Lehman, Samantha Sloyan, Igby Rigney, Rahul Kohli, Annarah Cymone, Annabeth Gish, Alex Essoe, Rahul Abburi, Matt Biedel, Michael Trucco, Crystal Balint, Louis Oliver                   │ ᴺᵁᴸᴸ                                                                  │ 2021-09-24 │         2021 │ TV-MA  │ 1 Season  │ TV Dramas, TV Horror, TV Mysteries                            │ The arrival of a charismatic young priest brings glorious miracles, ominous mysteries and renewed religious fervor to a dying town desperate to believe.  │
+ 7. │ s7      │ Movie   │ My Little Pony: A New Generation │ Robert Cullen, José Luis Ucha │ Vanessa Hudgens, Kimiko Glenn, James Marsden, Sofia Carson, Liza Koshy, Ken Jeong, Elizabeth Perkins, Jane Krakowski, Michael McKean, Phil LaMarr                                                                                                          │ ᴺᵁᴸᴸ                                                                  │ 2021-09-24 │         2021 │ PG     │ 91 min    │ Children & Family Movies                                      │ Equestria's divided. But a bright-eyed hero believes Earth Ponies, Pegasi and Unicorns should be pals — and, hoof to heart, she’s determined to prove it. │
+ 8. │ s8      │ Movie   │ Sankofa                          │ Haile Gerima                  │ Kofi Ghanaba, Oyafunmike Ogunlano, Alexandra Duah, Nick Medley, Mutabaruka, Afemo Omilami, Reggie Carter, Mzuri                                                                                                                                            │ United States, Ghana, Burkina Faso, United Kingdom, Germany, Ethiopia │ 2021-09-24 │         1993 │ TV-MA  │ 125 min   │ Dramas, Independent Movies, International Movies              │ On a photo shoot in Ghana, an American model slips back in time, becomes enslaved on a plantation and bears witness to the agony of her ancestral past.   │
+ 9. │ s9      │ TV Show │ The Great British Baking Show    │ Andy Devonshire               │ Mel Giedroyc, Sue Perkins, Mary Berry, Paul Hollywood                                                                                                                                                                                                      │ United Kingdom                                                        │ 2021-09-24 │         2021 │ TV-14  │ 9 Seasons │ British TV Shows, Reality TV                                  │ A talented batch of amateur bakers face off in a 10-week competition, whipping up their best dishes in the hopes of being named the U.K.'s best.          │
+10. │ s10     │ Movie   │ The Starling                     │ Theodore Melfi                │ Melissa McCarthy, Chris O'Dowd, Kevin Kline, Timothy Olyphant, Daveed Diggs, Skyler Gisondo, Laura Harrier, Rosalind Chao, Kimberly Quinn, Loretta Devine, Ravi Kapoor                                                                                     │ United States                                                         │ 2021-09-24 │         2021 │ PG-13  │ 104 min   │ Comedies, Dramas                                              │ A woman adjusting to life after a loss contends with a feisty bird that's taken over her garden — and a husband who's struggling to find a way forward.   │
+    └─────────┴─────────┴──────────────────────────────────┴───────────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┴───────────────────────────────────────────────────────────────────────┴────────────┴──────────────┴────────┴───────────┴───────────────────────────────────────────────────────────────┴───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+10 rows in set. Elapsed: 0.027 sec.
+
+############################################################ end 3 ########################################################
+############################################################ 4 ########################################################
+
+4. На стороне ClickHouse создать таблицу для интеграции с движком Postgres для связи с таблицей из PostgreSQL
+
+CREATE TABLE p1
+(
+    `show_id` String,
+    `type` String,
+    `title` String,
+    `director` String,
+    `cast_members` String,
+    `country` String,
+    `date_added` Date,
+    `release_year` UInt64,
+    `rating` String,
+    `duration` String,
+    `listed_in` String,
+    `description` String
+)
+ENGINE = PostgreSQL('db', 'dwh_test', 'netflix_shows', 'dwh_test', 'dwh_test', 'public')
+
+Query id: 424256c9-5d16-4d58-bf91-6f58e4182013
+
+Ok.
+
+0 rows in set. Elapsed: 0.003 sec.
+
+SELECT *
+FROM p1
+LIMIT 10, 10
+
+Query id: 1f32d092-5791-44f8-8126-7cb5db93e9bd
+
+    ┌─show_id─┬─type────┬─title───────────────────────────────────────────────┬─director──────────────────────────────────────┬─cast_members───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┬─country─────────────────┬─date_added─┬─release_year─┬─rating─┬─duration──┬─listed_in────────────────────────────────────────────────────────────────┬─description──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+ 1. │ s11     │ TV Show │ Vendetta: Truth, Lies and The Mafia                 │                                               │                                                                                                                                                                                                                                                            │                         │ 2021-09-24 │         2021 │ TV-MA  │ 1 Season  │ Crime TV Shows, Docuseries, International TV Shows                       │ Sicily boasts a bold "Anti-Mafia" coalition. But what happens when those trying to bring down organized crime are accused of being criminals themselves? │
+ 2. │ s12     │ TV Show │ Bangkok Breaking                                    │ Kongkiat Komesiri                             │ Sukollawat Kanarot, Sushar Manaying, Pavarit Mongkolpisit, Sahajak Boonthanakit, Suthipongse Thatphithakkul, Bhasaworn Bawronkirati, Daweerit Chullasapya, Waratthaya Wongchayaporn, Kittiphoom Wongpentak, Abhicha Thanachanun, Nophand Boonyai, Kittipong Khamsat, Arisara Wongchalee, Jaytiya Naiwattanakul, Pantipa Arunwattanachai, Panupan Jantanawong, Kungtap Saelim, Phumphat Chartsuriyakiat, Issara Veranitinunt, Keerati Sivakuae, Panjai Sirisuwan, Supranee Charoenpol, Suda Chuenban, Visaka Banhansupavat, Pitchatorn Santinatornkul │                         │ 2021-09-23 │         2021 │ TV-MA  │ 1 Season  │ Crime TV Shows, International TV Shows, TV Action & Adventure            │ Struggling to earn a living in Bangkok, a man joins an emergency rescue service and realizes he must unravel a citywide conspiracy.                      │
+ 3. │ s13     │ Movie   │ Je Suis Karl                                        │ Christian Schwochow                           │ Luna Wedler, Jannis Niewöhner, Milan Peschel, Edin Hasanović, Anna Fialová, Marlon Boess, Victor Boccard, Fleur Geffrier, Aziz Dyab, Mélanie Fouché, Elizaveta Maximová                                                                                    │ Germany, Czech Republic │ 2021-09-23 │         2021 │ TV-MA  │ 127 min   │ Dramas, International Movies                                             │ After most of her family is murdered in a terrorist bombing, a young woman is unknowingly lured into joining the very group that killed them.            │
+ 4. │ s14     │ Movie   │ Confessions of an Invisible Girl                    │ Bruno Garotti                                 │ Klara Castanho, Lucca Picon, Júlia Gomes, Marcus Bessa, Kiria Malheiros, Fernanda Concon, Gabriel Lima, Caio Cabral, Leonardo Cidade, Jade Cardozo                                                                                                         │                         │ 2021-09-22 │         2021 │ TV-PG  │ 91 min    │ Children & Family Movies, Comedies                                       │ When the clever but socially-awkward Tetê joins a new school, she'll do anything to fit in. But the queen bee among her classmates has other ideas.      │
+ 5. │ s15     │ TV Show │ Crime Stories: India Detectives                     │                                               │                                                                                                                                                                                                                                                            │                         │ 2021-09-22 │         2021 │ TV-MA  │ 1 Season  │ British TV Shows, Crime TV Shows, Docuseries                             │ Cameras following Bengaluru police on the job offer a rare glimpse into the complex and challenging inner workings of four major crime investigations.   │
+ 6. │ s16     │ TV Show │ Dear White People                                   │                                               │ Logan Browning, Brandon P. Bell, DeRon Horton, Antoinette Robertson, John Patrick Amedori, Ashley Blaine Featherson, Marque Richardson, Giancarlo Esposito                                                                                                 │ United States           │ 2021-09-22 │         2021 │ TV-MA  │ 4 Seasons │ TV Comedies, TV Dramas                                                   │ Students of color navigate the daily slights and slippery politics of life at an Ivy League college that's not nearly as "post-racial" as it thinks.     │
+ 7. │ s17     │ Movie   │ Europe's Most Dangerous Man: Otto Skorzeny in Spain │ Pedro de Echave García, Pablo Azorín Williams │                                                                                                                                                                                                                                                            │                         │ 2021-09-22 │         2020 │ TV-MA  │ 67 min    │ Documentaries, International Movies                                      │ Declassified documents reveal the post-WWII life of Otto Skorzeny, a close Hitler ally who escaped to Spain and became an adviser to world presidents.   │
+ 8. │ s18     │ TV Show │ Falsa identidad                                     │                                               │ Luis Ernesto Franco, Camila Sodi, Sergio Goyri, Samadhi Zendejas, Eduardo Yáñez, Sonya Smith, Alejandro Camacho, Azela Robinson, Uriel del Toro, Géraldine Bazán, Gabriela Roel, Marcus Ornellas                                                           │ Mexico                  │ 2021-09-22 │         2020 │ TV-MA  │ 2 Seasons │ Crime TV Shows, Spanish-Language TV Shows, TV Dramas                     │ Strangers Diego and Isabel flee their home in Mexico and pretend to be a married couple to escape his drug-dealing enemies and her abusive husband.      │
+ 9. │ s19     │ Movie   │ Intrusion                                           │ Adam Salky                                    │ Freida Pinto, Logan Marshall-Green, Robert John Burke, Megan Elisabeth Kelly, Sarah Minnich, Hayes Hargrove, Mark Sivertsen, Brandon Fierro, Antonio Valles, Clint Obenchain                                                                               │                         │ 2021-09-22 │         2021 │ TV-14  │ 94 min    │ Thrillers                                                                │ After a deadly home invasion at a couple’s new dream house, the traumatized wife searches for answers — and learns the real danger is just beginning.    │
+10. │ s20     │ TV Show │ Jaguar                                              │                                               │ Blanca Suárez, Iván Marcos, Óscar Casas, Adrián Lastra, Francesc Garrido, Stefan Weinert, Julia Möller, Alicia Chojnowski                                                                                                                                  │                         │ 2021-09-22 │         2021 │ TV-MA  │ 1 Season  │ International TV Shows, Spanish-Language TV Shows, TV Action & Adventure │ In the 1960s, a Holocaust survivor joins a group of self-trained spies who seek justice against Nazis fleeing to Spain to hide after WWII.               │
+    └─────────┴─────────┴─────────────────────────────────────────────────────┴───────────────────────────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┴─────────────────────────┴────────────┴──────────────┴────────┴───────────┴──────────────────────────────────────────────────────────────────────────┴──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+10 rows in set. Elapsed: 0.013 sec.
+
+############################################################ end 4 ########################################################
+############################################################ 5 ########################################################
+
+5. На стороне ClickHouse создать БД для интеграции с движком Postgres для связи с БД из PostgreSQL
+
+
+DROP DATABASE IF EXISTS pg_test_replica
+
+Query id: 50c5d289-63c9-44c3-b342-1653ca0afbbb
+
+Ok.
+
+0 rows in set. Elapsed: 0.014 sec.
+
+
+CREATE DATABASE pg_test_replica
+ENGINE = PostgreSQL('db:5432', 'dwh_test', 'dwh_test', 'dwh_test', 'public')
+
+Query id: c907cf5b-733a-4098-875f-0c0d98503606
+
+Ok.
+
+0 rows in set. Elapsed: 0.005 sec.
+
+
+SELECT *
+FROM pg_test_replica.netflix_shows
+LIMIT 20, 10
+
+Query id: c0abf8c8-8401-421e-bfe7-7297bb9f40f2
+
+    ┌─show_id─┬─type────┬─title───────────────────────────────────────────┬─director────────────────┬─cast_members──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┬─country──────────────────────┬─date_added─┬─release_year─┬─rating─┬─duration──┬─listed_in────────────────────────────────────────────────┬─description──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+ 1. │ s21     │ TV Show │ Monsters Inside: The 24 Faces of Billy Milligan │ Olivier Megaton         │ ᴺᵁᴸᴸ                                                                                                                                                  │ ᴺᵁᴸᴸ                         │ 2021-09-22 │         2021 │ TV-14  │ 1 Season  │ Crime TV Shows, Docuseries, International TV Shows       │ In the late 1970s, an accused serial rapist claims multiple personalities control his behavior, setting off a legal odyssey that captivates America.     │
+ 2. │ s22     │ TV Show │ Resurrection: Ertugrul                          │ ᴺᵁᴸᴸ                    │ Engin Altan Düzyatan, Serdar Gökhan, Hülya Darcan, Kaan Taşaner, Esra Bilgiç, Osman Soykut, Serdar Deniz, Cengiz Coşkun, Reshad Strik, Hande Subaşı   │ Turkey                       │ 2021-09-22 │         2018 │ TV-14  │ 5 Seasons │ International TV Shows, TV Action & Adventure, TV Dramas │ When a good deed unwittingly endangers his clan, a 13th-century Turkish warrior agrees to fight a sultan's enemies in exchange for new tribal land.      │
+ 3. │ s23     │ Movie   │ Avvai Shanmughi                                 │ K.S. Ravikumar          │ Kamal Hassan, Meena, Gemini Ganesan, Heera Rajgopal, Nassar, S.P. Balasubrahmanyam                                                                    │ ᴺᵁᴸᴸ                         │ 2021-09-21 │         1996 │ TV-PG  │ 161 min   │ Comedies, International Movies                           │ Newly divorced and denied visitation rights with his daughter, a doting father disguises himself as a gray-haired nanny in order to spend time with her. │
+ 4. │ s24     │ Movie   │ Go! Go! Cory Carson: Chrissy Takes the Wheel    │ Alex Woo, Stanley Moore │ Maisie Benson, Paul Killam, Kerry Gudjohnsen, AC Lim                                                                                                  │ ᴺᵁᴸᴸ                         │ 2021-09-21 │         2021 │ TV-Y   │ 61 min    │ Children & Family Movies                                 │ From arcade games to sled days and hiccup cures, Cory Carson’s curious little sister Chrissy speeds off on her own for fun and adventure all over town!  │
+ 5. │ s25     │ Movie   │ Jeans                                           │ S. Shankar              │ Prashanth, Aishwarya Rai Bachchan, Sri Lakshmi, Nassar                                                                                                │ India                        │ 2021-09-21 │         1998 │ TV-14  │ 166 min   │ Comedies, International Movies, Romantic Movies          │ When the father of the man she loves insists that his twin sons marry twin sisters, a woman creates an alter ego that might be a bit too convincing.     │
+ 6. │ s26     │ TV Show │ Love on the Spectrum                            │ ᴺᵁᴸᴸ                    │ Brooke Satchwell                                                                                                                                      │ Australia                    │ 2021-09-21 │         2021 │ TV-14  │ 2 Seasons │ Docuseries, International TV Shows, Reality TV           │ Finding love can be hard for anyone. For young adults on the autism spectrum, exploring the unpredictable world of dating is even more complicated.      │
+ 7. │ s27     │ Movie   │ Minsara Kanavu                                  │ Rajiv Menon             │ Arvind Swamy, Kajol, Prabhu Deva, Nassar, S.P. Balasubrahmanyam, Girish Karnad                                                                        │ ᴺᵁᴸᴸ                         │ 2021-09-21 │         1997 │ TV-PG  │ 147 min   │ Comedies, International Movies, Music & Musicals         │ A tangled love triangle ensues when a man falls for a woman studying to become a nun — and she falls for the friend he enlists to help him pursue her.   │
+ 8. │ s28     │ Movie   │ Grown Ups                                       │ Dennis Dugan            │ Adam Sandler, Kevin James, Chris Rock, David Spade, Rob Schneider, Salma Hayek, Maria Bello, Maya Rudolph, Colin Quinn, Tim Meadows, Joyce Van Patten │ United States                │ 2021-09-20 │         2010 │ PG-13  │ 103 min   │ Comedies                                                 │ Mourning the loss of their beloved junior high basketball coach, five middle-aged pals reunite at a lake house and rediscover the joys of being a kid.   │
+ 9. │ s29     │ Movie   │ Dark Skies                                      │ Scott Stewart           │ Keri Russell, Josh Hamilton, J.K. Simmons, Dakota Goyo, Kadan Rockett, L.J. Benet, Rich Hutchman, Myndy Crist, Annie Thurman, Jake Brennan            │ United States                │ 2021-09-19 │         2013 │ PG-13  │ 97 min    │ Horror Movies, Sci-Fi & Fantasy                          │ A family’s idyllic suburban life shatters when an alien force invades their home, and as they struggle to convince others of the deadly threat.          │
+10. │ s30     │ Movie   │ Paranoia                                        │ Robert Luketic          │ Liam Hemsworth, Gary Oldman, Amber Heard, Harrison Ford, Lucas Till, Embeth Davidtz, Julian McMahon, Josh Holloway, Richard Dreyfuss, Angela Sarafyan │ United States, India, France │ 2021-09-19 │         2013 │ PG-13  │ 106 min   │ Thrillers                                                │ Blackmailed by his company's CEO, a low-level employee finds himself forced to spy on the boss's rival and former mentor.                                │
+    └─────────┴─────────┴─────────────────────────────────────────────────┴─────────────────────────┴───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┴──────────────────────────────┴────────────┴──────────────┴────────┴───────────┴──────────────────────────────────────────────────────────┴──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+10 rows in set. Elapsed: 0.015 sec.
+
+############################################################ end 5 ########################################################
