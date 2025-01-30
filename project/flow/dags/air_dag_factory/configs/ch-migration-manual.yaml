@@ -1,0 +1,7 @@
+dag:
+  start_date: !date
+    datetime: now
+    interval:
+      days: 2
+
+tasks: []

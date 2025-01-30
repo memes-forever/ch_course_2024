@@ -1,19 +1,26 @@
+# Загрузка изменений из GitHub по всем репозиториям за последние n дней. Построение etl слоев с использованием Apache Airflow и Clickhouse.
 
-# Установка сервисов
-
-### Airflow install
+### Установка venv и зависимостей для дебага
 * перед запуском команд, необходимо создать venv!
 ```shell
 cd project
 
 cd services/air
 ./update_requirements.sh
+```
 
+### Airflow install
+* Разворачивание Airflow
+```shell
 export BUILDKIT_PROGRESS=plain
 docker-compose build
 
 docker-compose down
 docker-compose up -d
+```
+* вход в bash клиент airflow
+```shell
+docker exec -it air-airflow-worker-1 bash
 ```
 
 ### ClickHouse install
@@ -36,10 +43,6 @@ docker exec -it clickhouse1 clickhouse-client --user airflow_user --password air
 
 
 
-
-
-Загрузка изменений из GitHub по всем репозиториям за последние 7 дней. 
-Построение snp, stg, mart слоев с использованием Apache Airflow и Clickhouse.
 
 drop database snp_gharchive ON CLUSTER sharded_cluster;
 create database snp_gharchive ON CLUSTER sharded_cluster;
