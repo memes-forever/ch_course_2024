@@ -64,7 +64,7 @@ class DagFactory:
         return task
 
 
-    def register_dag(self, dag_id: str, local_globals=None):
+    def register_dag(self, dag_id: str, local_globals=None) -> DAG:
         start_time_dag = time()
         log = getLogger('airflow.task')
         log.info(f'start reg {dag_id} ...')

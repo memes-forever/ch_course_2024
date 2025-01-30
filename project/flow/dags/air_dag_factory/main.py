@@ -4,11 +4,16 @@ from airflow_ext.utils.dag_factory import DagFactory
 
 config = [
     # api
-    'ch-migration-manual',
+    'migration-manual',
+    'api-gharchive-60',
 ]
 
 dg = DagFactory()
-dg.config_path = os.path.join(HOME_DIR, 'dags/air_dag_factory/configs')
+dg.config_path = os.path.join(HOME_DIR, 'flow/dags/air_dag_factory/configs')
 
 for c in config:
-    dg.register_dag(c, globals())
+    dag = dg.register_dag(c, globals())
+
+
+if __name__ == '__main__':
+    dag.test()

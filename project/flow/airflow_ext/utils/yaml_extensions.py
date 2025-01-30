@@ -40,7 +40,7 @@ class YamlDateTimeObject(yaml.YAMLObject):
 
 
 class YamlTimedeltaObject(yaml.YAMLObject):
-    yaml_tag = '!delta'
+    yaml_tag = '!timedelta'
 
     def __init__(self, timedelta_params: dict):
         self.timedelta = timedelta(**timedelta_params)

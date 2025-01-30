@@ -1,0 +1,50 @@
+dag:
+  max_active_runs: 1  # maximum number of active DAG runs
+  max_active_tasks: 16  # number of task instances allowed to run concurrently
+  default_args:
+    max_active_tis_per_dag: 1  # number of concurrent running task instances across dag_runs per task.
+    retries: 0  # number of retries that should be performed before failing the task
+    retry_delay: !timedelta  # delay between retries
+      minutes: 1
+    execution_timeout: !timedelta  # max time allowed for the execution of this task instance, if it goes beyond it will raise and fail.
+      minutes: 10
+  start_date: !date
+    datetime: now
+    interval:
+      days: 1
+  doc_md: 'flow/dags/sql_executor/README.md'
+  description: Manual execute migration.
+  catchup: False
+  schedule:
+
+default:
+  operator: &operator 'dags.sql_executor.operators.sql_executor_operator.SqlExecutorOperator'
+  conn_id: &conn_id clickhouse_local_admin
+
+tasks:
+  - operator: *operator
+    operator_params:
+      task_id: 1.databases
+      task_group:
+        group_id: clickhouse
+      main_config:
+        conn_id: *conn_id
+        template: 'flow/migration/1.databases.sql'
+    downstream:
+      - operator: *operator
+        operator_params:
+          task_id: 2.roles_users
+          task_group:
+            group_id: clickhouse
+          main_config:
+            conn_id: *conn_id
+            template: 'flow/migration/2.roles&users.sql'
+        downstream:
+          - operator: *operator
+            operator_params:
+              task_id: 3.snp_gharchive
+              task_group:
+                group_id: clickhouse
+              main_config:
+                conn_id: *conn_id
+                template: 'flow/migration/3.snp_gharchive.sql'

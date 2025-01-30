@@ -1,7 +1,9 @@
+import os
 from typing import Any
 
 from airflow.hooks.base import BaseHook
 from airflow.models import BaseOperator
+from airflow_ext.constant import HOME_DIR
 from airflow_ext.hook.common import get_hook_by_conn_id
 
 
@@ -19,7 +21,7 @@ class SqlExecutorOperator(BaseOperator):
     def pre_execute(self, context: Any):
         self._hook = get_hook_by_conn_id(self._conn_id)
 
-        with open(self.main_config['template'], 'r', encoding='utf-8') as f:
+        with open(os.path.join(HOME_DIR, self.main_config['template']), 'r', encoding='utf-8') as f:
             self.sql_text = f.read()
 
     def execute(self, context: Any):
