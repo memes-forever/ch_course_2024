@@ -87,7 +87,11 @@ class DagFactory:
             self.create_task(helper, t, dag, task_groups)
 
         now = datetime.now().strftime("%H:%M:%S")
-        dag._description = f'Reg end: {now}, Reg time: {str(round(time()-start_time_dag, 1))} sec'
+        t_str = f'Reg end: {now}, Reg time: {str(round(time()-start_time_dag, 1))} sec'
+        if dag._description:
+            dag._description += f" ({t_str})"
+        else:
+            dag._description = f"({t_str})"
         local_globals[dag.dag_id] = dag
         log.info(dag._description)
 

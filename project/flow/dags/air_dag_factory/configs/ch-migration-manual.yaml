@@ -3,5 +3,12 @@ dag:
     datetime: now
     interval:
       days: 2
+  doc_md: 'flow/dags/sql_executor/README.md'
+  description: Manual execute migration.
+  catchup: False
+  schedule:
 
-tasks: []
+tasks:
+  - operator: airflow.operators.empty.EmptyOperator
+    operator_params:
+      task_id: t1
