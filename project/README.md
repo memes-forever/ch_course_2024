@@ -4,7 +4,6 @@
 * перед запуском команд, необходимо создать venv!
 ```shell
 cd project
-
 cd services/air
 ./update_requirements.sh
 ```
@@ -12,6 +11,9 @@ cd services/air
 ### Airflow install
 * Разворачивание Airflow
 ```shell
+cd project
+cd services/air
+
 export BUILDKIT_PROGRESS=plain
 docker-compose build
 

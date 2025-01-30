@@ -9,6 +9,9 @@ dag:
   schedule:
 
 tasks:
-  - operator: airflow.operators.empty.EmptyOperator
+  - operator: dags.sql_executor.operators.sql_executor_operator.SqlExecutorOperator
     operator_params:
       task_id: t1
+      main_config:
+        conn_id: clickhouse_local
+        template: 'flow/migration/t.sql'

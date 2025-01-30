@@ -89,7 +89,7 @@ x-airflow-common:
 
     # copy env settings from prod
     AIRFLOW__CORE__KILLED_TASK_CLEANUP_TIME: 1800
-    AIRFLOW__CELERY__WORKER_CONCURRENCY: 8  # by default 64 on prod, but locally 8 is enough
+    AIRFLOW__CELERY__WORKER_CONCURRENCY: 4  # by default 64 on prod, but locally 8 is enough
     AIRFLOW__SCHEDULER__SCHEDULE_AFTER_TASK_EXECUTION: 'true'
 #    AIRFLOW__WEBSERVER__CONFIG_FILE: '/opt/airflow/dags/repo/configs/airflow/webserver_config.py'
   volumes:
