@@ -15,7 +15,7 @@ dag:
   end_date: !date
     datetime: now
     interval:
-      hours: 4
+      hours: 5
   doc_md: 'flow/dags/api_gharchive/README.md'
   description: GitHub archive download
   catchup: True
