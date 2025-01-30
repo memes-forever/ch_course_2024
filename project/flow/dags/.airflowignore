@@ -1,0 +1,8 @@
+# ignore all dirs
+airflow_extensions
+operators
+plugins
+sensors
+utils
+models
+resources
