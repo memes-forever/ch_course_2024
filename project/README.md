@@ -41,8 +41,55 @@ docker exec -it clickhouse1 clickhouse-client --user airflow_user --password air
 Загрузка изменений из GitHub по всем репозиториям за последние 7 дней. 
 Построение snp, stg, mart слоев с использованием Apache Airflow и Clickhouse.
 
+drop database snp_gharchive ON CLUSTER sharded_cluster;
+create database snp_gharchive ON CLUSTER sharded_cluster;
+
+drop table snp_gharchive._events_raw  ON CLUSTER sharded_cluster;
+drop table snp_gharchive.events_raw  ON CLUSTER sharded_cluster;
+
+select *,
+    hostName(),
+    _shard_num from snp_gharchive.events_raw;
+select * from snp_gharchive._events_raw;
+
+insert into snp_gharchive.events_raw
+(json, date_load)
+select 'awd', '2021-01-01 15:00:00'
+
+insert into snp_gharchive.events_raw
+(json, date_load)
+select 
+    line as json,
+    '2025-01-01 15:00:00' as date_load
+FROM url(
+    'https://data.gharchive.org/2025-01-01-15.json.gz', 
+    'LineAsString'
+)
+where '2025-01-01 15:00:00' not in (select date_load from snp_gharchive.events_raw group by 1)
+;
+
+insert into snp_gharchive.events_raw
+(json, date_load)
+select 
+    line as json,
+    '2025-01-01 14:00:00' as date_load
+FROM url(
+    'https://data.gharchive.org/2025-01-01-14.json.gz', 
+    'LineAsString'
+)
+;
 
 
+SELECT
+    getMacro('replica'),
+    getMacro('shard'),
+    database,
+    name,
+    engine,
+    total_rows,
+    round((total_bytes / 1024) / 1024, 3) AS total_Mbytes
+from clusterAllReplicas('sharded_cluster', system.tables)
+WHERE database = 'snp_gharchive'
 
 
 select 

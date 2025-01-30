@@ -1,25 +1,37 @@
 <clickhouse>
     <remote_servers>
+        <default remove="remove"></default>
+
         <sharded_cluster>
+            <!-- узлы CH с одинаковой secret доверяют друг другу. -->
+            <secret>SuperSecret</secret>
+
             <shard>
-                <internal_replication>true</internal_replication>
                 <replica>
                     <host>clickhouse1</host>
                     <port>9000</port>
+                    <user>replicated_user</user>
+                    <password>ch_course_2024</password>
                 </replica>
                 <replica>
                     <host>clickhouse2</host>
                     <port>9000</port>
+                    <user>replicated_user</user>
+                    <password>ch_course_2024</password>
                 </replica>
             </shard>
             <shard>
                 <replica>
                     <host>clickhouse3</host>
                     <port>9000</port>
+                    <user>replicated_user</user>
+                    <password>ch_course_2024</password>
                 </replica>
                 <replica>
                     <host>clickhouse4</host>
                     <port>9000</port>
+                    <user>replicated_user</user>
+                    <password>ch_course_2024</password>
                 </replica>
             </shard>
         </sharded_cluster>
