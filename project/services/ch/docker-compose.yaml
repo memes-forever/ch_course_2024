@@ -4,6 +4,7 @@ services:
   zookeeper:
     image: bitnami/zookeeper:latest
 #    image: clickhouse/clickhouse-keeper
+    container_name: zookeeper
     networks:
       - ch_replicated
     environment:
@@ -16,6 +17,7 @@ services:
 
   clickhouse1:
     image: clickhouse/clickhouse-server
+    container_name: clickhouse1
     ports:
       - "8002:9000"
       - "9123:8123"
@@ -29,12 +31,14 @@ services:
     depends_on:
       - zookeeper
     volumes:
+      - ch-db-volume-1:/var/lib/clickhouse
       - ./config.d/z.config_1.xml:/etc/clickhouse-server/config.d/z.config.xml
       - ./users.d/z.users.xml:/etc/clickhouse-server/users.d/z.users.xml
       - ./log/clickhouse1:/var/log/clickhouse-server
 
   clickhouse2:
     image: clickhouse/clickhouse-server
+    container_name: clickhouse2
     ports:
       - "8003:9000"
       - "9124:8123"
@@ -48,12 +52,14 @@ services:
     depends_on:
       - zookeeper
     volumes:
+      - ch-db-volume-2:/var/lib/clickhouse
       - ./config.d/z.config_2.xml:/etc/clickhouse-server/config.d/z.config.xml
       - ./users.d/z.users.xml:/etc/clickhouse-server/users.d/z.users.xml
       - ./log/clickhouse2:/var/log/clickhouse-server
 
   clickhouse3:
     image: clickhouse/clickhouse-server
+    container_name: clickhouse3
     ports:
       - "8004:9000"
       - "9125:8123"
@@ -67,12 +73,14 @@ services:
     depends_on:
       - zookeeper
     volumes:
+      - ch-db-volume-3:/var/lib/clickhouse
       - ./config.d/z.config_3.xml:/etc/clickhouse-server/config.d/z.config.xml
       - ./users.d/z.users.xml:/etc/clickhouse-server/users.d/z.users.xml
       - ./log/clickhouse3:/var/log/clickhouse-server
 
   clickhouse4:
     image: clickhouse/clickhouse-server
+    container_name: clickhouse4
     ports:
       - "8005:9000"
       - "9126:8123"
@@ -86,6 +94,7 @@ services:
     depends_on:
       - zookeeper
     volumes:
+      - ch-db-volume-4:/var/lib/clickhouse
       - ./config.d/z.config_4.xml:/etc/clickhouse-server/config.d/z.config.xml
       - ./users.d/z.users.xml:/etc/clickhouse-server/users.d/z.users.xml
       - ./log/clickhouse4:/var/log/clickhouse-server
@@ -93,3 +102,9 @@ services:
 networks:
   ch_replicated:
     driver: bridge
+
+volumes:
+  ch-db-volume-1:
+  ch-db-volume-2:
+  ch-db-volume-3:
+  ch-db-volume-4:

@@ -27,11 +27,11 @@ docker-compose up -d
 ```
 * вход в консоль клиент ch as default
 ```shell
-docker exec -it ch-clickhouse1-1 clickhouse-client --user default --password ch_course_2024
+docker exec -it clickhouse1 clickhouse-client --user default --password ch_course_2024
 ```
 * вход в консоль клиент ch as airflow_user
 ```shell
-docker exec -it ch-clickhouse1-1 clickhouse-client --user airflow_user --password airflow_password
+docker exec -it clickhouse1 clickhouse-client --user airflow_user --password airflow_password
 ```
 
 
