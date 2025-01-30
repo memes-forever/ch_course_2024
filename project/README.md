@@ -2,6 +2,7 @@
 # Установка сервисов
 
 ### Airflow install
+* перед запуском команд, необходимо создать venv!
 ```shell
 cd project
 
@@ -14,6 +15,21 @@ docker-compose build
 docker-compose down
 docker-compose up -d
 ```
+
+### ClickHouse install
+* Разворачивание ch
+```shell
+cd project
+
+cd services/ch
+docker-compose down
+docker-compose up -d
+```
+* вход в консоль клиент ch
+```shell
+docker exec -it ch-clickhouse1-1 clickhouse-client
+```
+
 
 
 
