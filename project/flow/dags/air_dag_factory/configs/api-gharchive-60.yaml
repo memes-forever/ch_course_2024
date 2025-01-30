@@ -11,7 +11,11 @@ dag:
   start_date: !date
     datetime: now
     interval:
-      days: 1
+      hours: 7
+  end_date: !date
+    datetime: now
+    interval:
+      hours: 4
   doc_md: 'flow/dags/api_gharchive/README.md'
   description: GitHub archive download
   catchup: True
@@ -29,3 +33,5 @@ tasks:
         group_id: events
       main_config:
         conn_id: *conn_id
+        schema: snp_gharchive
+        table: events_raw

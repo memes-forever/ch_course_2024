@@ -1,0 +1,12 @@
+insert into {{ schema }}.{{ table }}
+(json, date_load)
+select
+    line as json,
+    '{{ date_load }}' as date_load
+FROM url(
+    '{{ api_url }}/{{ date_load_url }}.json.gz',
+    'LineAsString'
+)
+where '{{ date_load }}' not in (
+    select date_load from {{ schema }}.{{ table }} group by 1
+)
