@@ -23,7 +23,23 @@ class SqlExecutorOperator(BaseOperator):
             self.sql_text = f.read()
 
     def execute(self, context: Any):
-        self.log.warning(self._hook.execute('select 1'))
+        # delete comments from sql
+        self.sql_text = '\n'.join(
+            r
+            for r in self.sql_text.split('\n')
+            if not r.strip().startswith('--')
+                and not r.strip().startswith('/*')
+        )
+
+        # run sql
+        for sql in self.sql_text.split(';'):
+            sql = sql.strip()
+            if not sql:
+                continue
+
+            last_result = self._hook.execute(sql)
+            if last_result:
+                self.log.warning(f'Last result from sql: {last_result}')
 
     def post_execute(self, context: Any, result: Any = None):
         pass

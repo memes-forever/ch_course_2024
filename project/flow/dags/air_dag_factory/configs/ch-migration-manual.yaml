@@ -11,7 +11,27 @@ dag:
 tasks:
   - operator: dags.sql_executor.operators.sql_executor_operator.SqlExecutorOperator
     operator_params:
-      task_id: t1
+      task_id: 1.databases
+      task_group:
+        group_id: execute
       main_config:
-        conn_id: clickhouse_local
-        template: 'flow/migration/t.sql'
+        conn_id: clickhouse_local_admin
+        template: 'flow/migration/1.databases.sql'
+    downstream:
+      - operator: dags.sql_executor.operators.sql_executor_operator.SqlExecutorOperator
+        operator_params:
+          task_id: 2.roles_users
+          task_group:
+            group_id: execute
+          main_config:
+            conn_id: clickhouse_local_admin
+            template: 'flow/migration/2.roles&users.sql'
+        downstream:
+          - operator: dags.sql_executor.operators.sql_executor_operator.SqlExecutorOperator
+            operator_params:
+              task_id: 3.snp_gharchive
+              task_group:
+                group_id: execute
+              main_config:
+                conn_id: clickhouse_local_admin
+                template: 'flow/migration/3.snp_gharchive.sql'
