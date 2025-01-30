@@ -29,7 +29,9 @@ services:
     depends_on:
       - zookeeper
     volumes:
-      - ./configs/z.config_1.xml:/etc/clickhouse-server/config.d/z.config.xml
+      - ./config.d/z.config_1.xml:/etc/clickhouse-server/config.d/z.config.xml
+      - ./users.d/z.users.xml:/etc/clickhouse-server/users.d/z.users.xml
+      - ./log/clickhouse1:/var/log/clickhouse-server
 
   clickhouse2:
     image: clickhouse/clickhouse-server
@@ -46,7 +48,9 @@ services:
     depends_on:
       - zookeeper
     volumes:
-      - ./configs/z.config_2.xml:/etc/clickhouse-server/config.d/z.config.xml
+      - ./config.d/z.config_2.xml:/etc/clickhouse-server/config.d/z.config.xml
+      - ./users.d/z.users.xml:/etc/clickhouse-server/users.d/z.users.xml
+      - ./log/clickhouse2:/var/log/clickhouse-server
 
   clickhouse3:
     image: clickhouse/clickhouse-server
@@ -63,7 +67,9 @@ services:
     depends_on:
       - zookeeper
     volumes:
-      - ./configs/z.config_3.xml:/etc/clickhouse-server/config.d/z.config.xml
+      - ./config.d/z.config_3.xml:/etc/clickhouse-server/config.d/z.config.xml
+      - ./users.d/z.users.xml:/etc/clickhouse-server/users.d/z.users.xml
+      - ./log/clickhouse3:/var/log/clickhouse-server
 
   clickhouse4:
     image: clickhouse/clickhouse-server
@@ -80,7 +86,9 @@ services:
     depends_on:
       - zookeeper
     volumes:
-      - ./configs/z.config_4.xml:/etc/clickhouse-server/config.d/z.config.xml
+      - ./config.d/z.config_4.xml:/etc/clickhouse-server/config.d/z.config.xml
+      - ./users.d/z.users.xml:/etc/clickhouse-server/users.d/z.users.xml
+      - ./log/clickhouse4:/var/log/clickhouse-server
 
 networks:
   ch_replicated:

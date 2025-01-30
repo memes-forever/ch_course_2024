@@ -1,0 +1,7 @@
+<clickhouse>
+    <users>
+        <default>
+            <password>ch_course_2024</password>
+        </default>
+    </users>
+</clickhouse>
