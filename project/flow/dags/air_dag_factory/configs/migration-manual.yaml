@@ -8,7 +8,7 @@ dag:
       minutes: 1
     execution_timeout: !timedelta  # max time allowed for the execution of this task instance, if it goes beyond it will raise and fail.
       minutes: 10
-  start_date: !date
+  start_date: !relativedate
     datetime: now
     interval:
       days: 1

@@ -1,7 +1,41 @@
-# Загрузка изменений из GitHub по всем репозиториям за последние n дней. Построение etl слоев с использованием Apache Airflow и Clickhouse.
+# Проектная работа, на тему: Загрузка изменений из GitHub по всем репозиториям за последние n дней. Построение ETL с использованием Airflow и Clickhouse
+
+## Features
+### Airflow
+* Используем Airflow как оркестратор
+* Для Airflow собираем кастомный образ на базе официального
+  * Для связи Airflow с ClickHouse используем `airflow-clickhouse-plugin`, ее в стандартном airflow нет.
+    Для того, чтобы поставить ее - пишем свой [.env](services/air/.env), [docker-compose.yaml](services/air/docker-compose.yaml), [Dockerfile](services/air/Dockerfile), [constraints.txt](services/air/constraints.txt) и [requirements.txt](services/air/requirements.txt)
+  * Файлы [constraints.txt](services/air/constraints.txt) и [requirements.txt](services/air/requirements.txt) помогут развернуть локальную среду для дебага дагов.
+  * Файл [constraints.txt](services/air/constraints.txt) нужен для ограничения установки библиотек, которые могут поломать airflow. (такие списки готовят сами разработчики ПО)
+* Локальная среда с дебагом
+  * Копия среды из airflow, для удобной аннотации и подсказок из IDE
+  * Дебаг, без необходимости запускать вебку airflow
+* Фабрика дагов [air_dag_factory](flow/dags/air_dag_factory)
+  Нужна для генерации дагов из .yaml файликов, упрощает написание дагов
+* Кастомная, минибиблиотека [airflow_ext](flow/airflow_ext), написанная под проект для облегчения написания операторов
+  * Включает в себя Фабрику дагов [dag_factory.py](flow/airflow_ext/utils/dag_factory.py)
+  * Jinja2 хелпер, [jinja.py](flow/airflow_ext/utils/jinja.py)
+  * Yaml хелпер, с поддержкой некоторых полезных тэгов (!relativedate, !timedelta)
+* Использование `data_interval_start/end` из контекста airflow, для удобного отслеживания статуса загрузки за определенный час
+* ...
+
+<hr>
+
+### Clickhouse
+* Используем ClickHouse как хранилище
+* Кластер в ClickHouse (2 шарда по 2 реплики), шардирование данных
+* Миграции [migration](flow/migration), которые запускаются через airflow
+* Ролевая модель в ClickHouse [2.roles&users.sql](flow/migration/2.roles%26users.sql)
+* Загрузка данных через функцию URL в Clickhouse
+* ...
+
+<hr>
+
+## Установка
 
 ### Установка venv и зависимостей для дебага
-* перед запуском команд, необходимо создать venv!
+* перед запуском команд, необходимо создать venv! (в pycharm или `python -m venv venv & source ./venv/bin/activate`)
 ```shell
 cd project
 cd services/air
@@ -43,48 +77,11 @@ docker exec -it clickhouse1 clickhouse-client --user default --password ch_cours
 docker exec -it clickhouse1 clickhouse-client --user airflow_user --password airflow_password
 ```
 
+<hr>
 
-
-
-drop database snp_gharchive ON CLUSTER sharded_cluster;
-create database snp_gharchive ON CLUSTER sharded_cluster;
-
-drop table snp_gharchive._events_raw  ON CLUSTER sharded_cluster;
-drop table snp_gharchive.events_raw  ON CLUSTER sharded_cluster;
-
-select *,
-    hostName(),
-    _shard_num from snp_gharchive.events_raw;
-select * from snp_gharchive._events_raw;
-
-insert into snp_gharchive.events_raw
-(json, date_load)
-select 'awd', '2021-01-01 15:00:00'
-
-insert into snp_gharchive.events_raw
-(json, date_load)
-select 
-    line as json,
-    '2025-01-01 15:00:00' as date_load
-FROM url(
-    'https://data.gharchive.org/2025-01-01-15.json.gz', 
-    'LineAsString'
-)
-where '2025-01-01 15:00:00' not in (select date_load from snp_gharchive.events_raw group by 1)
-;
-
-insert into snp_gharchive.events_raw
-(json, date_load)
-select 
-    line as json,
-    '2025-01-01 14:00:00' as date_load
-FROM url(
-    'https://data.gharchive.org/2025-01-01-14.json.gz', 
-    'LineAsString'
-)
-;
-
-
+## Полезное
+* Запрос для отображения распределения данных в таблицах
+```sql
 SELECT
     getMacro('replica'),
     getMacro('shard'),
@@ -95,58 +92,4 @@ SELECT
     round((total_bytes / 1024) / 1024, 3) AS total_Mbytes
 from clusterAllReplicas('sharded_cluster', system.tables)
 WHERE database = 'snp_gharchive'
-
-
-select 
-    -- xxHash64(json) as hash_row,
-    -- json
-    *
-FROM url(
-    'https://data.gharchive.org/2025-01-01-15.json.gz', 
-    'JSONEachRow',
-    'id String, type String, actor String, repo String, payload String, public String, created_at String'
-)
--- WHERE isValidJSON(json)
-LIMIT 100
-;
-
-
-
-select *
-from format(
-    JSONEachRow,
-    'id String, type String, actor String, repo String, payload String, public String, created_at String',
-    (
-    select line
-    from url('https://data.gharchive.org/2025-01-01-15.json.gz', 'LineAsString')
-    WHERE isValidJSON(line)
-    limit 10
-    )
-)
-;
-
-from format(
-    JSONEachRow,
-    '{{ ','.join(columns_with_types) }}',
-    (
-        select JSON_QUERY(json, '$.value[*]') as json
-        from url(
-            '{{ url }}',
-            'JSONAsString',
-            headers(
-                {{ ',\n\t\t\t\t'.join(headers) }}
-            )
-        )
-    )
-)
-
-
-
-    ┌─json───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ {"id":"45193146633",
-"type":"WatchEvent",
-"actor":{"id":20070526,"login":"weltenwandler","display_login":"weltenwandler","gravatar_id":"","url":"https://api.github.com/users/weltenwandler","avatar_url":"https://avatars.githubusercontent.com/u/20070526?"},
-"repo":{"id":311594993,"name":"slashback100/presence_simulation","url":"https://api.github.com/repos/slashback100/presence_simulation"},
-"payload":{"action":"started"},
-"public":true,
-"created_at":"2025-01-01T15:00:00Z"} │
+```

@@ -4,7 +4,7 @@ import yaml
 
 
 class YamlDateTimeObject(yaml.YAMLObject):
-    yaml_tag = '!date'
+    yaml_tag = '!relativedate'
 
     def __init__(self, exec_date):
         self.exec_date = exec_date
