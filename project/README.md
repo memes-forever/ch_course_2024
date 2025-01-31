@@ -15,8 +15,8 @@
   Нужна для генерации дагов из .yaml файликов, упрощает написание дагов
 * Кастомная, минибиблиотека [airflow_ext](flow/airflow_ext), написанная под проект для облегчения написания операторов
   * Включает в себя Фабрику дагов [dag_factory.py](flow/airflow_ext/utils/dag_factory.py)
-  * Jinja2 хелпер, [jinja.py](flow/airflow_ext/utils/jinja.py)
-  * Yaml хелпер, с поддержкой некоторых полезных тэгов (!relativedate, !timedelta)
+  * Jinja2 хелпер [jinja.py](flow/airflow_ext/utils/jinja.py)
+  * Yaml хелпер [yml.py](flow/airflow_ext/utils/yml.py), с поддержкой некоторых полезных тэгов (!relativedate, !timedelta) [yaml_extensions.py](flow/airflow_ext/utils/yaml_extensions.py)
 * Использование `data_interval_start/end` из контекста airflow, для удобного отслеживания статуса загрузки за определенный час
 * ...
 
@@ -25,9 +25,10 @@
 ### Clickhouse
 * Используем ClickHouse как хранилище
 * Кластер в ClickHouse (2 шарда по 2 реплики), шардирование данных
-* Миграции [migration](flow/migration), которые запускаются через airflow
+* Миграции [migration](flow/migration), которые запускаются через airflow по расписанию
 * Ролевая модель в ClickHouse [2.roles&users.sql](flow/migration/2.roles%26users.sql)
 * Загрузка данных через функцию URL в Clickhouse
+* Сохраняем ВСЕ данные as is, даже косячные
 * ...
 
 <hr>
