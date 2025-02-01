@@ -1,7 +1,7 @@
 import os
 from typing import Any
 
-from airflow.hooks.base import BaseHook
+from airflow.hooks.dbapi import DbApiHook
 from airflow.models import BaseOperator
 from airflow_ext.constant import HOME_DIR, LOCAL_TZ
 from airflow_ext.hook.common import get_hook_by_conn_id
@@ -12,7 +12,7 @@ class GhArchiveOperator(BaseOperator):
     """
     url example https://data.gharchive.org/2025-01-01-15.json.gz
     """
-    _hook: BaseHook
+    _hook: DbApiHook
     _jinja2: Jinja2
 
     def __init__(self, main_config: dict, *args, **kwargs):
@@ -38,6 +38,14 @@ class GhArchiveOperator(BaseOperator):
         self._jinja2 = Jinja2(os.path.join(HOME_DIR, 'flow/dags/api_gharchive/resources'))
 
     def execute(self, context: Any):
+        delete_sql = self._jinja2.env.get_template('ch_delete.sql.j2').render(
+            cluster=self._hook.cluster,
+            schema=self._schema,
+            table=self._table,
+            date_load=context[self._context_column].in_tz(LOCAL_TZ).strftime('%Y-%m-%d %H:%M:%S'),
+        )
+        self._hook.run(delete_sql)
+
         sql = self._jinja2.env.get_template('ch_insert_from_url.sql.j2').render(
             api_url=self._api_url,
             schema=self._schema,
@@ -45,10 +53,7 @@ class GhArchiveOperator(BaseOperator):
             date_load=context[self._context_column].in_tz(LOCAL_TZ).strftime('%Y-%m-%d %H:%M:%S'),
             date_load_url=context[self._context_column].in_tz(LOCAL_TZ).strftime(self._api_foramt),
         )
-
-        last_result = self._hook.run(sql)
-        if last_result:
-            self.log.warning(f'Last result from sql: {last_result}')
+        self._hook.run(sql)
 
     def post_execute(self, context: Any, result: Any = None):
         pass

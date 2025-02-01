@@ -1,14 +1,14 @@
 import os
 from typing import Any
 
-from airflow.hooks.base import BaseHook
+from airflow.hooks.dbapi import DbApiHook
 from airflow.models import BaseOperator
 from airflow_ext.constant import HOME_DIR
 from airflow_ext.hook.common import get_hook_by_conn_id
 
 
 class SqlExecutorOperator(BaseOperator):
-    _hook: BaseHook
+    _hook: DbApiHook
     sql_text: str
 
     def __init__(self, main_config: dict, *args, **kwargs):
@@ -39,9 +39,7 @@ class SqlExecutorOperator(BaseOperator):
             if not sql:
                 continue
 
-            last_result = self._hook.run(sql)
-            if last_result:
-                self.log.warning(f'Last result from sql: {last_result}')
+            self._hook.run(sql)
 
     def post_execute(self, context: Any, result: Any = None):
         pass

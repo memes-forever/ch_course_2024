@@ -1,0 +1,2 @@
+ALTER TABLE {{ schema }}._{{ table }} ON CLUSTER '{{ cluster }}'
+DELETE WHERE date_load = '{{ date_load }}'
