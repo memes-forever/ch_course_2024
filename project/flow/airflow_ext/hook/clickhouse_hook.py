@@ -7,8 +7,7 @@ from clickhouse_driver import Client
 
 class ClickhouseHook(DbApiHook):
     """
-    @author = kheum.cho@samsung.com
-
+    ClickhouseHook
     """
 
     def bulk_dump(self, table, tmp_file):
