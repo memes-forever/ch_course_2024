@@ -6,6 +6,7 @@ GRANT CLUSTER, CREATE TEMPORARY TABLE, REMOTE, URL ON *.* TO airflow_group ON CL
 
 /* databases access */
 GRANT ALL ON snp_gharchive.* TO airflow_group ON CLUSTER sharded_cluster;
+GRANT ALL ON stg_gharchive.* TO airflow_group ON CLUSTER sharded_cluster;
 
 /* users */
 CREATE USER IF NOT EXISTS airflow_user IDENTIFIED WITH plaintext_password BY 'airflow_password' ON CLUSTER sharded_cluster;

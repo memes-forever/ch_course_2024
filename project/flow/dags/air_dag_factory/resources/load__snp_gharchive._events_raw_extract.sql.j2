@@ -1,0 +1,8 @@
+ALTER TABLE snp_gharchive._events_raw_extract DELETE WHERE date_load = '{{ data_interval_end }}'
+;
+
+INSERT INTO snp_gharchive._events_raw_extract
+(date_load, id, type, public, created_at, actor, repo, payload, org, hash_row)
+SELECT date_load, id.1, type.1, public.1, created_at.1, actor.1, repo.1, payload.1, org.1, hash_row
+FROM snp_gharchive._events_raw_extract_v
+WHERE date_load = '{{ data_interval_end }}'

@@ -29,6 +29,7 @@
 * Ролевая модель в ClickHouse [2.roles&users.sql](flow/migration/2.roles%26users.sql)
 * Загрузка данных через функцию URL в Clickhouse
 * Сохраняем ВСЕ данные as is (raw), даже косячные
+* Загрузка данных по шардам (на каждом отдельно)
 * ...
 
 <hr>

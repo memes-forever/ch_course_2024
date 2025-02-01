@@ -1,0 +1,8 @@
+ALTER TABLE stg_gharchive._events DELETE WHERE date_load = '{{ data_interval_end }}'
+;
+
+INSERT INTO stg_gharchive._events
+(date_load, id, type, public, created_at)
+SELECT date_load, id, type, public, created_at
+FROM snp_gharchive._events_raw_extract
+WHERE date_load = '{{ data_interval_end }}'

@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS snp_gharchive._events_raw_extract ON CLUSTER sharded_
     `repo` Nullable(String),
     `payload` Nullable(String),
     `org` Nullable(String),
-    `proccessed_dttm` DateTime,  -- tech field
+    `proccessed_dttm` DateTime DEFAULT now(),  -- tech field
     `hash_row` UInt64    -- tech field
 )
 ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/{table}/{uuid}/{shard}', '{replica}')

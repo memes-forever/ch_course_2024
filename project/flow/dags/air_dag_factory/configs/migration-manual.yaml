@@ -18,33 +18,42 @@ dag:
   schedule:
 
 default:
-  operator: &operator 'dags.sql_executor.operators.sql_executor_operator.SqlExecutorOperator'
-  conn_id: &conn_id clickhouse_local_admin
+  sql_executor_operator: &sql_executor_operator 'dags.sql_executor.operators.sql_executor_operator.SqlExecutorOperator'
+  clickhouse_local_admin: &clickhouse_local_admin clickhouse_local_admin
 
 tasks:
-  - operator: *operator
+  - operator: *sql_executor_operator
     operator_params:
       task_id: 1.databases
       task_group:
         group_id: clickhouse
       main_config:
-        conn_id: *conn_id
+        conn_id: *clickhouse_local_admin
         template: 'flow/migration/1.databases.sql'
     downstream:
-      - operator: *operator
+      - operator: *sql_executor_operator
         operator_params:
           task_id: 2.roles_users
           task_group:
             group_id: clickhouse
           main_config:
-            conn_id: *conn_id
+            conn_id: *clickhouse_local_admin
             template: 'flow/migration/2.roles&users.sql'
         downstream:
-          - operator: *operator
+          - operator: *sql_executor_operator
             operator_params:
               task_id: 3.snp_gharchive
               task_group:
                 group_id: clickhouse
               main_config:
-                conn_id: *conn_id
+                conn_id: *clickhouse_local_admin
                 template: 'flow/migration/3.snp_gharchive.sql'
+            downstream:
+              - operator: *sql_executor_operator
+                operator_params:
+                  task_id: 4.stg_gharchive
+                  task_group:
+                    group_id: clickhouse
+                  main_config:
+                    conn_id: *clickhouse_local_admin
+                    template: 'flow/migration/4.stg_gharchive.sql'
