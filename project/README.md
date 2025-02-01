@@ -4,7 +4,7 @@
 ### Airflow
 * Используем Airflow как оркестратор
 * Для Airflow собираем кастомный образ на базе официального
-  * Для связи Airflow с ClickHouse используем `airflow-clickhouse-plugin`, ее в стандартном airflow нет.
+  * Для связи Airflow с ClickHouse используем `clickhouse-driver`, ее в стандартном airflow нет.
     Для того, чтобы поставить ее - пишем свой [.env](services/air/.env), [docker-compose.yaml](services/air/docker-compose.yaml), [Dockerfile](services/air/Dockerfile), [constraints.txt](services/air/constraints.txt) и [requirements.txt](services/air/requirements.txt)
   * Файлы [constraints.txt](services/air/constraints.txt) и [requirements.txt](services/air/requirements.txt) помогут развернуть локальную среду для дебага дагов.
   * Файл [constraints.txt](services/air/constraints.txt) нужен для ограничения установки библиотек, которые могут поломать airflow. (такие списки готовят сами разработчики ПО)
@@ -15,6 +15,7 @@
   Нужна для генерации дагов из .yaml файликов, упрощает написание дагов
 * Кастомная, минибиблиотека [airflow_ext](flow/airflow_ext), написанная под проект для облегчения написания операторов
   * Включает в себя Фабрику дагов [dag_factory.py](flow/airflow_ext/utils/dag_factory.py)
+  * ClickHouseHook
   * Jinja2 хелпер [jinja.py](flow/airflow_ext/utils/jinja.py)
   * Yaml хелпер [yml.py](flow/airflow_ext/utils/yml.py), с поддержкой некоторых полезных тэгов (!relativedate, !timedelta) [yaml_extensions.py](flow/airflow_ext/utils/yaml_extensions.py)
 * Использование `data_interval_start/end` из контекста airflow, для удобного отслеживания статуса загрузки за определенный час
@@ -37,12 +38,23 @@
 ## Установка
 
 ### Установка venv и зависимостей для дебага
-* перед запуском команд, необходимо создать venv! (в pycharm или `python -m venv venv && source ./venv/bin/activate`)
+1. перед запуском команд, необходимо создать venv! (в pycharm или `python -m venv venv && source ./venv/bin/activate`)
 ```shell
 cd project
 cd services/air
 # внутри файла update_requirements скачивание актуального constraints.txt и pip install -r requirements.txt
 ./update_requirements.sh
+```
+2. необходимо переоткрыть терминал и виртуальное окружение и выполнить:
+```shell
+airflow db init
+```
+3. найти файл по пути `~/airflow/airflow.cfg`, открыть его и поменять конфигурацию на:
+```
+[database]
+sql_alchemy_conn = postgresql+psycopg2://airflow:airflow@localhost:5432/airflow
+[core]
+sql_alchemy_conn = postgresql+psycopg2://airflow:airflow@localhost:5432/airflow
 ```
 
 ### Airflow install
