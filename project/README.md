@@ -28,7 +28,7 @@
 * Миграции [migration](flow/migration), которые запускаются через airflow по расписанию
 * Ролевая модель в ClickHouse [2.roles&users.sql](flow/migration/2.roles%26users.sql)
 * Загрузка данных через функцию URL в Clickhouse
-* Сохраняем ВСЕ данные as is, даже косячные
+* Сохраняем ВСЕ данные as is (raw), даже косячные
 * ...
 
 <hr>
@@ -36,10 +36,11 @@
 ## Установка
 
 ### Установка venv и зависимостей для дебага
-* перед запуском команд, необходимо создать venv! (в pycharm или `python -m venv venv & source ./venv/bin/activate`)
+* перед запуском команд, необходимо создать venv! (в pycharm или `python -m venv venv && source ./venv/bin/activate`)
 ```shell
 cd project
 cd services/air
+# внутри файла update_requirements скачивание актуального constraints.txt и pip install -r requirements.txt
 ./update_requirements.sh
 ```
 
@@ -49,9 +50,11 @@ cd services/air
 cd project
 cd services/air
 
+# build image with print logs in terminal
 export BUILDKIT_PROGRESS=plain
 docker-compose build
 
+# run
 docker-compose down
 docker-compose up -d
 ```
@@ -64,8 +67,9 @@ docker exec -it air-airflow-worker-1 bash
 * Разворачивание ch
 ```shell
 cd project
-
 cd services/ch
+
+# run
 docker-compose down
 docker-compose up -d
 ```
