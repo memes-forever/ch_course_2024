@@ -46,7 +46,7 @@ class GhArchiveOperator(BaseOperator):
             date_load_url=context[self._context_column].in_tz(LOCAL_TZ).strftime(self._api_foramt),
         )
 
-        last_result = self._hook.execute(sql)
+        last_result = self._hook.run(sql)
         if last_result:
             self.log.warning(f'Last result from sql: {last_result}')
 

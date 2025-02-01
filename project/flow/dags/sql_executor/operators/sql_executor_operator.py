@@ -39,7 +39,7 @@ class SqlExecutorOperator(BaseOperator):
             if not sql:
                 continue
 
-            last_result = self._hook.execute(sql)
+            last_result = self._hook.run(sql)
             if last_result:
                 self.log.warning(f'Last result from sql: {last_result}')
 
