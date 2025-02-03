@@ -5,6 +5,8 @@ from logging import getLogger
 from time import time
 
 from airflow.models import DAG
+from airflow_ext.utils.common import find_key_in_dicts
+from airflow_ext.utils.pool import get_or_create_pool
 from airflow.utils.task_group import TaskGroup
 from airflow_ext.utils.yml import Yaml
 
@@ -37,6 +39,11 @@ class DagFactory:
                     **operator_params['task_group'],
                 )
             operator_params['task_group'] = task_groups[operator_params['task_group']['group_id']]
+
+        pool_name = operator_params.get('pool', find_key_in_dicts(operator_params, ['conn_id']))
+        if pool_name:
+            pool_obj = get_or_create_pool(pool_name)
+            operator_params['pool'] = pool_obj.pool
 
         task = operator_class(
             dag=dag,

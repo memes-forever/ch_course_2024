@@ -1,0 +1,6 @@
+max_active_tis_per_dag: 1  # number of concurrent running task instances across dag_runs per task.
+retries: 0  # number of retries that should be performed before failing the task
+retry_delay: !timedelta  # delay between retries
+  minutes: 1
+execution_timeout: !timedelta  # max time allowed for the execution of this task instance, if it goes beyond it will raise and fail.
+  minutes: 10

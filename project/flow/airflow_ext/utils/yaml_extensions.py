@@ -1,6 +1,9 @@
 from datetime import timedelta
 import pendulum
 import yaml
+import os
+
+from airflow_ext.constant import HOME_DIR
 
 
 class YamlDateTimeObject(yaml.YAMLObject):
@@ -59,10 +62,32 @@ class YamlTimedeltaObject(yaml.YAMLObject):
         return dumper.represent_mapping(cls.yaml_tag, data.timedelta_params)
 
 
+class IncludeYamlFileLoader(yaml.YAMLObject):
+    yaml_tag = '!include_yaml'
+
+    def __init__(self, params):
+        self.params = params
+
+    def __repr__(self):
+        return self.params.__repr__()
+
+    @classmethod
+    def from_yaml(cls, loader, node):
+        filename = os.path.join(HOME_DIR, node.value) #.format(HOME_DIR=HOME_DIR)
+
+        with open(filename, 'r', encoding='utf-8') as f:
+            return yaml.load(f, yaml.SafeLoader)
+
+    @classmethod
+    def to_yaml(cls, dumper, data):
+        return dumper.represent_mapping(cls.yaml_tag, data.params)
+
+
 def register_yaml_objects():
     yaml_objs = [
         YamlDateTimeObject,
         YamlTimedeltaObject,
+        IncludeYamlFileLoader,
     ]
 
     for obj in yaml_objs:

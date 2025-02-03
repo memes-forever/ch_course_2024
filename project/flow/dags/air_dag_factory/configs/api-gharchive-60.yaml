@@ -1,13 +1,8 @@
 dag:
   max_active_runs: 1  # maximum number of active DAG runs
   max_active_tasks: 16  # number of task instances allowed to run concurrently
-  default_args:
-    max_active_tis_per_dag: 1  # number of concurrent running task instances across dag_runs per task.
-    retries: 0  # number of retries that should be performed before failing the task
-    retry_delay: !timedelta  # delay between retries
-      minutes: 1
-    execution_timeout: !timedelta  # max time allowed for the execution of this task instance, if it goes beyond it will raise and fail.
-      minutes: 10
+  default_args: !include_yaml
+    'flow/dags/air_dag_factory/configs/_default_args.yaml'
   start_date: !relativedate
     datetime: now
     interval:
