@@ -116,6 +116,7 @@ order by 3,4,1
 
 <hr>
 ## Скрины
-![screen_1.png](screen_1.png)
+
+![screen_1.png](https://github.com/memes-forever/ch_course_2024/raw/main/project/screen_1.png)
 ![screen_2.png](screen_2.png)
 ![screen_3.png](screen_3.png)
