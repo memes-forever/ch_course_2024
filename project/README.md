@@ -102,13 +102,20 @@ docker exec -it clickhouse1 clickhouse-client --user airflow_user --password air
 * Запрос для отображения распределения данных в таблицах
 ```sql
 SELECT
-    getMacro('replica'),
     getMacro('shard'),
+    getMacro('replica'),
     database,
     name,
     engine,
     total_rows,
     round((total_bytes / 1024) / 1024, 3) AS total_Mbytes
 from clusterAllReplicas('sharded_cluster', system.tables)
-WHERE database = 'snp_gharchive'
+WHERE database in ('snp_gharchive', 'stg_gharchive') and engine = 'ReplicatedMergeTree'
+order by 3,4,1
 ```
+
+<hr>
+## Скрины
+![screen_1.png](screen_1.png)
+![screen_2.png](screen_2.png)
+![screen_3.png](screen_3.png)
