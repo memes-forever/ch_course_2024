@@ -219,7 +219,7 @@ class ClickhouseHook(DbApiHook):
 
         latest_mutation_fail_reason = f"""
         SELECT latest_fail_reason
-        FROM system_dist.mutations
+        FROM system.mutations
         WHERE (database, table) = ('{database}', '{table_name}')
             AND NOT is_done
         """

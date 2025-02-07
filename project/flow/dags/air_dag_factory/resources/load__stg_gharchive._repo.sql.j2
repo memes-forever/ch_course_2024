@@ -5,10 +5,10 @@ INSERT INTO stg_gharchive._repo
 (date_load, event_id, id, name, url)
 select
     date_load,
-    id as event_id,
+    e.id as event_id,
     JSONExtract(repo, 'id', 'Nullable(UInt64)') as id,
     JSONExtract(repo, 'name', 'Nullable(String)') as name,
     JSONExtract(repo, 'url', 'Nullable(String)') as url
-from snp_gharchive._events_raw_extract
+from snp_gharchive._events_raw_extract as e
 where isValidJSON(repo)
     and date_load = '{{ data_interval_end }}'

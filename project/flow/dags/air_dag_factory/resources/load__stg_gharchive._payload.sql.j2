@@ -5,7 +5,7 @@ INSERT INTO stg_gharchive._payload
 (date_load, event_id, action, issue, number, pull_request, comment, pages, ref, ref_type, master_branch, description, pusher_type, repository_id, push_id, size, distinct_size, head, before, commits, release, forkee, review, member)
 select
     date_load,
-    id as event_id,
+    e.id as event_id,
     JSONExtract(payload, 'action', 'Nullable(String)') as action,
     JSONExtract(payload, 'issue', 'Nullable(String)') as issue,
     JSONExtract(payload, 'number', 'Nullable(UInt64)') as number,
@@ -28,6 +28,6 @@ select
     JSONExtract(payload, 'forkee', 'Nullable(String)') as forkee,
     JSONExtract(payload, 'review', 'Nullable(String)') as review,
     JSONExtract(payload, 'member', 'Nullable(String)') as member
-from snp_gharchive.events_raw_extract
+from snp_gharchive.events_raw_extract as e
 where isValidJSON(payload)
     and date_load = '{{ data_interval_end }}'

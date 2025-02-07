@@ -6,13 +6,13 @@ INSERT INTO stg_gharchive._actor_and_org
 select
     date_load,
     'actor' as type,
-    id as event_id,
+    e.id as event_id,
     JSONExtract(actor, 'id', 'Nullable(UInt64)') as id,
     JSONExtract(actor, 'login', 'Nullable(String)') as login,
     JSONExtract(actor, 'display_login', 'Nullable(String)') as display_login,
     JSONExtract(actor, 'gravatar_id', 'Nullable(String)') as gravatar_id,
     JSONExtract(actor, 'url', 'Nullable(String)') as url,
     JSONExtract(actor, 'avatar_url', 'Nullable(String)') as avatar_url
-from snp_gharchive._events_raw_extract
+from snp_gharchive._events_raw_extract as e
 where isValidJSON(actor)
     and date_load = '{{ data_interval_end }}'

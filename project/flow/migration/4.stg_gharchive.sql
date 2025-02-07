@@ -60,6 +60,8 @@ AS stg_gharchive._repo
 ENGINE = Distributed('sharded_cluster', 'stg_gharchive', '_repo', xxHash64(`date_load`))  -- distributed key
 ;
 
+
+
 CREATE TABLE IF NOT EXISTS stg_gharchive._payload ON CLUSTER sharded_cluster
 (
     `date_load` DateTime,
