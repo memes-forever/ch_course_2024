@@ -1,0 +1,33 @@
+ALTER TABLE stg_gharchive._payload DELETE WHERE date_load = '{{ data_interval_end }}'
+;
+
+INSERT INTO stg_gharchive._payload
+(date_load, event_id, action, issue, number, pull_request, comment, pages, ref, ref_type, master_branch, description, pusher_type, repository_id, push_id, size, distinct_size, head, before, commits, release, forkee, review, member)
+select
+    date_load,
+    id as event_id,
+    JSONExtract(payload, 'action', 'Nullable(String)') as action,
+    JSONExtract(payload, 'issue', 'Nullable(String)') as issue,
+    JSONExtract(payload, 'number', 'Nullable(UInt64)') as number,
+    JSONExtract(payload, 'pull_request', 'Nullable(String)') as pull_request,
+    JSONExtract(payload, 'comment', 'Nullable(String)') as comment,
+    JSONExtract(payload, 'pages', 'Nullable(String)') as pages,
+    JSONExtract(payload, 'ref', 'Nullable(String)') as ref,
+    JSONExtract(payload, 'ref_type', 'Nullable(String)') as ref_type,
+    JSONExtract(payload, 'master_branch', 'Nullable(String)') as master_branch,
+    JSONExtract(payload, 'description', 'Nullable(String)') as description,
+    JSONExtract(payload, 'pusher_type', 'Nullable(String)') as pusher_type,
+    JSONExtract(payload, 'repository_id', 'Nullable(UInt64)') as repository_id,
+    JSONExtract(payload, 'push_id', 'Nullable(UInt64)') as push_id,
+    JSONExtract(payload, 'size', 'Nullable(UInt64)') as size,
+    JSONExtract(payload, 'distinct_size', 'Nullable(UInt64)') as distinct_size,
+    JSONExtract(payload, 'head', 'Nullable(String)') as head,
+    JSONExtract(payload, 'before', 'Nullable(String)') as before,
+    JSONExtract(payload, 'commits', 'Nullable(String)') as commits,
+    JSONExtract(payload, 'release', 'Nullable(String)') as release,
+    JSONExtract(payload, 'forkee', 'Nullable(String)') as forkee,
+    JSONExtract(payload, 'review', 'Nullable(String)') as review,
+    JSONExtract(payload, 'member', 'Nullable(String)') as member
+from snp_gharchive.events_raw_extract
+where isValidJSON(payload)
+    and date_load = '{{ data_interval_end }}'

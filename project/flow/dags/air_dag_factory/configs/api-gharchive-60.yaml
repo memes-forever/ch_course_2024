@@ -113,3 +113,45 @@ tasks:
         conn_id: *clickhouse_local_shard_2
         template: 'flow/dags/air_dag_factory/resources/load__stg_gharchive._org.sql.j2'
     upstream: ['events_raw.load_in_snp_raw_extract_s2']
+
+# load repo
+  - operator: *sql_executor_operator
+    operator_params:
+      task_id: load_in_stg_s1
+      task_group:
+        group_id: repo
+      main_config:
+        conn_id: *clickhouse_local_shard_1
+        template: 'flow/dags/air_dag_factory/resources/load__stg_gharchive._repo.sql.j2'
+    upstream: ['events_raw.load_in_snp_raw_extract_s1']
+
+  - operator: *sql_executor_operator
+    operator_params:
+      task_id: load_in_stg_s2
+      task_group:
+        group_id: repo
+      main_config:
+        conn_id: *clickhouse_local_shard_2
+        template: 'flow/dags/air_dag_factory/resources/load__stg_gharchive._repo.sql.j2'
+    upstream: ['events_raw.load_in_snp_raw_extract_s2']
+
+# load payload
+  - operator: *sql_executor_operator
+    operator_params:
+      task_id: load_in_stg_s1
+      task_group:
+        group_id: payload
+      main_config:
+        conn_id: *clickhouse_local_shard_1
+        template: 'flow/dags/air_dag_factory/resources/load__stg_gharchive._payload.sql.j2'
+    upstream: ['events_raw.load_in_snp_raw_extract_s1']
+
+  - operator: *sql_executor_operator
+    operator_params:
+      task_id: load_in_stg_s2
+      task_group:
+        group_id: payload
+      main_config:
+        conn_id: *clickhouse_local_shard_2
+        template: 'flow/dags/air_dag_factory/resources/load__stg_gharchive._payload.sql.j2'
+    upstream: ['events_raw.load_in_snp_raw_extract_s2']

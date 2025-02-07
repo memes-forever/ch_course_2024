@@ -19,6 +19,7 @@
   * Jinja2 хелпер [jinja.py](flow/airflow_ext/utils/jinja.py)
   * Yaml хелпер [yml.py](flow/airflow_ext/utils/yml.py), с поддержкой некоторых полезных тэгов (!relativedate, !timedelta) [yaml_extensions.py](flow/airflow_ext/utils/yaml_extensions.py)
 * Использование `data_interval_start/end` из контекста airflow, для удобного отслеживания статуса загрузки за определенный час
+* Идентпотентные операторы, т.е. чтобы перезагрузить данные за определенное число, нужно просто сделать clear определенным таскам
 * ...
 
 <hr>
