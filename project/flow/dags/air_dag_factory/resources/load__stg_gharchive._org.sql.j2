@@ -1,0 +1,18 @@
+ALTER TABLE stg_gharchive._actor_and_org DELETE WHERE date_load = '{{ data_interval_end }}' and type = 'org'
+;
+
+INSERT INTO stg_gharchive._actor_and_org
+(date_load, type, event_id, id, login, display_login, gravatar_id, url, avatar_url)
+select
+    date_load,
+    'org' as type,
+    id as event_id,
+    JSONExtract(org, 'id', 'Nullable(UInt64)') as id,
+    JSONExtract(org, 'login', 'Nullable(String)') as login,
+    JSONExtract(org, 'display_login', 'Nullable(String)') as display_login,
+    JSONExtract(org, 'gravatar_id', 'Nullable(String)') as gravatar_id,
+    JSONExtract(org, 'url', 'Nullable(String)') as url,
+    JSONExtract(org, 'avatar_url', 'Nullable(String)') as avatar_url
+from snp_gharchive._events_raw_extract
+where isValidJSON(org)
+    and date_load = '{{ data_interval_end }}'
