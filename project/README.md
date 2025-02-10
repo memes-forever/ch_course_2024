@@ -1,5 +1,13 @@
 # Загрузка изменений из GitHub по всем репозиториям за последние n дней. Построение ETL с использованием Airflow и Clickhouse
 
+## Данные беру из gharchive.org
+Например:
+
+Query	Command
+* Activity for 1/1/2015 @ 3PM UTC	`wget https://data.gharchive.org/2015-01-01-15.json.gz`
+* Activity for 1/1/2015	`wget https://data.gharchive.org/2015-01-01-{0..23}.json.gz`
+* Activity for all of January 2015	`wget https://data.gharchive.org/2015-01-{01..31}-{0..23}.json.gz`
+
 ## Features
 ### Airflow
 * Используем Airflow как оркестратор
