@@ -38,20 +38,24 @@ class GhArchiveOperator(BaseOperator):
         self._jinja2 = Jinja2(os.path.join(HOME_DIR, 'flow/dags/api_gharchive/resources'))
 
     def execute(self, context: Any):
+        date_load = context[self._context_column].in_tz(LOCAL_TZ)
+
         delete_sql = self._jinja2.env.get_template('ch_delete.sql.j2').render(
             cluster=self._hook.cluster,
             schema=self._schema,
             table=self._table,
-            date_load=context[self._context_column].in_tz(LOCAL_TZ).strftime('%Y-%m-%d %H:%M:%S'),
+            date_load=date_load.strftime('%Y-%m-%d %H:%M:%S'),
         )
         self._hook.run(delete_sql)
 
+        date_load_url = date_load.strftime(self._api_foramt).split('-')
+        date_load_url = '-'.join(date_load_url[:-1] + [str(int(date_load_url[-1]))])
         sql = self._jinja2.env.get_template('ch_insert_from_url.sql.j2').render(
             api_url=self._api_url,
             schema=self._schema,
             table=self._table,
-            date_load=context[self._context_column].in_tz(LOCAL_TZ).strftime('%Y-%m-%d %H:%M:%S'),
-            date_load_url=context[self._context_column].in_tz(LOCAL_TZ).strftime(self._api_foramt),
+            date_load=date_load.strftime('%Y-%m-%d %H:%M:%S'),
+            date_load_url=date_load_url,
         )
         self._hook.run(sql)
 

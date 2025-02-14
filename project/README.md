@@ -51,8 +51,8 @@ Query	Command
 ```shell
 cd project
 cd services/air
-# внутри файла update_requirements скачивание актуального constraints.txt и pip install -r requirements.txt
-./update_requirements.sh
+
+pip install requirements_debug.txt
 ```
 2. необходимо переоткрыть терминал и виртуальное окружение и выполнить:
 ```shell
